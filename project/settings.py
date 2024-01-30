@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["143.198.200.182"]
 
 
 # Application definition
@@ -117,7 +117,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
+from dotenv import load_dotenv
+import os
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+PARENT_DIR = BASE_DIR.parent
+env_path = PARENT_DIR / "auth/.env"
+load_dotenv(env_path)
+STATIC_ROOT = PARENT_DIR / 'site/public/static'
+SECRET_KEY = os.environ.get("secret_key")
 STATIC_URL = '/static/'
 
 
