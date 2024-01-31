@@ -124,10 +124,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static_local" ]
 #BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PARENT_DIR = BASE_DIR.parent
-env_path = PARENT_DIR / "auth/.env"
-load_dotenv(env_path)
+#env_path = PARENT_DIR / "auth/.env"
+#load_dotenv(env_path)
 STATIC_ROOT = PARENT_DIR / 'site/public/static'
-SECRET_KEY = os.environ.get("secret_key")
+#SECRET_KEY = os.environ.get("secret_key")
 
 
 import datetime
