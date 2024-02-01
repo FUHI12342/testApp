@@ -126,7 +126,9 @@ STATIC_URL = '/static/'
 #PARENT_DIR = BASE_DIR.parent
 #env_path = PARENT_DIR / "auth/.env"
 #load_dotenv(env_path)
-STATIC_ROOT = BASE_DIR/'site/public/static'
+STATIC_ROOT = [
+    BASE_DIR/'site/public/static',
+    ]
 #SECRET_KEY = os.environ.get("secret_key")
 
 
