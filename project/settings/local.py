@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["143.198.200.182"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -122,12 +122,12 @@ import os
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [ BASE_DIR /'static_local']
-#BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PARENT_DIR = BASE_DIR.parent
 #env_path = PARENT_DIR / "auth/.env"
 #load_dotenv(env_path)
 STATIC_ROOT = PARENT_DIR / "site/public/static"
-#SECRET_KEY = os.environ.get("secret_key")
+SECRET_KEY = os.environ.get("secret_key")
 
 
 import datetime
