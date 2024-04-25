@@ -23,14 +23,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["143.198.200.182"]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'social_django',
     'booking.apps.BookingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,7 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'testApp',  # Add this line
+    'rest_framework'
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,12 +54,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Djangoのデフォルトの認証バックエンド
+    'social_core.backends.line.LineOAuth2',  # LINEのOAuth2認証バックエンド
+]
+ 
+
 ROOT_URLCONF = 'project.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'booking/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,7 +109,24 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'DEBUG',
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -120,8 +147,16 @@ USE_TZ = True
 from dotenv import load_dotenv
 import os
 
+# 静的ファイルの設定
 STATIC_URL = '/static/'
-STATIC_ROOT = '/usr/share/nginx/html/static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
+]
+
+
+#本番環境での静的ファイルの設定
+#STATIC_ROOT = '/usr/share/nginx/html/static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/usr/share/nginx/html/media'
@@ -169,7 +204,58 @@ PUBLIC_HOLIDAYS = [
 ]
 
 LOGIN_URL = 'booking:login'
-LOGIN_REDIRECT_URL = 'booking:store_list'
-LOGOUT_REDIRECT_URL = 'booking:login'
+LOGIN_REDIRECT_URL = 'booking:store_list' # ログイン後にリダイレクトするURL
+LOGOUT_REDIRECT_URL = 'booking:login' 
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+LINE_CHANNEL_ID = "2003969601"
+
+LINE_CHANNEL_SECRET = "0f65e88a404ba95833bca990cf312e40"
+
+LINE_REDIRECT_URL = 'http://127.0.0.1:8000/booking/login/line/success/' # リダイレクトURL
+
+# import requests
+# from linebot import LineBotApi
+# from linebot.models import TextSendMessage
+
+# # LINE Messaging APIのアクセストークン
+# line_access_token = 'SwYJEbvMawMifRQ2yXIvhLLZJHwsBAOQzo4uGOrwIACTOybf3YbvJsWxVWN7KOtEcQJnpjQ6A4nYsc9+8is7ZYU2aIyrc2w1XESYFUOlWb17nScbom6jUxW/8UeejLpoFBPwErqH6JKes7SMSYd/PgdB04t89/1O/w1cDnyilFU='
+
+# # 決済サービスのAPIキー
+PAYMENT_API_KEY = 'sk_live_7ldzwc0xXXyVcarFazjHEEN7bTvXpa7x'
+
+# # ユーザーID（LINEログイン後に取得）
+# user_id = 'USER_ID'
+
+# # LINE Messaging APIの初期化
+# line_bot_api = LineBotApi(line_access_token)
+
+# # 決済サービスのAPIを使用して決済URLを生成
+# payment_api_url = 'https://api.payment-service.com/create-payment-url'
+# headers = {'Authorization': 'Bearer ' + payment_api_key}
+# data = {
+#     # 必要なパラメータを設定
+# }
+# response = requests.post(payment_api_url, headers=headers, data=data)
+# payment_url = response.json()['payment_url']
+
+# # LINE Messaging APIを使用してメッセージを送信
+# message = TextSendMessage(text='こちらのURLから決済を行ってください: ' + payment_url)
+# line_bot_api.push_message(user_id, message)
+
+# LINE Messaging APIのアクセストークン
+LINE_ACCESS_TOKEN = 'SwYJEbvMawMifRQ2yXIvhLLZJHwsBAOQzo4uGOrwIACTOybf3YbvJsWxVWN7KOtEcQJnpjQ6A4nYsc9+8is7ZYU2aIyrc2w1XESYFUOlWb17nScbom6jUxW/8UeejLpoFBPwErqH6JKes7SMSYd/PgdB04t89/1O/w1cDnyilFU='
+
+# ユーザーIDとメッセージ
+#ユーザーIDはログイン後に取得
+user_id = 'Udf02e8cec56a91be9005b6f10c6b7a56'
+print('セッティング７７７')
+
+# settings.py
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CELERY_broker_url = 'redis://localhost:6379/0'
+accept_content = ['json']
+task_serializer = 'json'
+

@@ -3,7 +3,7 @@ from django.shortcuts import resolve_url, get_object_or_404
 from django.test import TestCase
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils import timezone
-from .models import Schedule, Staff
+from .models import Schedule, Staff, Store, Customer
 
 batu = '×'
 maru = '○'
@@ -499,3 +499,73 @@ class MyPageHolidayAddViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 405)
 
+from django.test import TestCase, Client
+from django.urls import reverse
+
+from django.contrib.auth.models import User
+from linebot import LineBotApi
+from django.conf import settings
+LINE_CHANNEL_ID = settings.LINE_CHANNEL_ID  
+LINE_CHANNEL_SECRET = settings.LINE_CHANNEL_SECRET
+REDIRECT_URL = settings.LINE_REDIRECT_URL
+from unittest.mock import Mock  
+from unittest.mock import patch
+
+class PayingSuccessViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
+        # テスト用のユーザーIDを設定
+        line_user_id = 'testLineUserId'
+
+        # LINE APIからプロフィール情報を取得（モックを使用）
+        profile = Mock()
+        profile.user_id = line_user_id
+
+        # セッションにプロフィール情報を設定
+        session = self.client.session
+        session['profile'] = {'user_id': profile.user_id, 'sub': '@yakiedamamesan'}
+        session.save()
+        # Userオブジェクトを作成（適切なパラメータを設定してください）
+        self.user = User.objects.create_user(username='testuser', password='12345')
+        # Storeオブジェクトを作成（適切なパラメータを設定してください）
+        self.store = Store.objects.create(name='テストストア')
+        # Staffオブジェクトを作成
+        self.staff = Staff.objects.create(name='テストスタッフ', user_id=self.user.id, store_id=self.store.id,line_id='@yakiedamamesan')
+        # Customerオブジェクトを作成（適切なパラメータを設定してください）
+        self.customer = Customer.objects.create(line_user_id='testLineUserId', name='テストカスタマー')
+        # Scheduleオブジェクトを作成
+        self.schedule = Schedule.objects.create(
+            is_temporary=True, 
+            start=timezone.now(),
+            end=timezone.now() + timezone.timedelta(hours=1),  # endフィールドに現在時刻の1時間後を設定
+            staff_id=self.staff.id,# staff_idフィールドに先ほど作成したStaffオブジェクトのIDを設定
+            customer_id=self.customer.id  # customer_idフィールドに先ほど作成したCustomerオブジェクトのIDを設定
+        )
+    @patch('linebot.LineBotApi.push_message')
+    
+    def test_paying_success_view(self, mock_push_message):
+        # CoineyKit-Paygeから送られてくるであろうデータを模擬的に作成
+        data = {
+            'amount': '1000',
+            'currency': 'JPY',
+            'orderId': '1234',
+            'status': 'paid',
+            # 他の必要なデータ...
+        }
+
+        # PayingSuccessViewにPOSTリクエストを送信
+        response = self.client.post(reverse('booking:paying_success'), data)
+
+        # レスポンスのステータスコードが200（成功）であることを確認
+        self.assertEqual(response.status_code, 200)
+
+        # Scheduleオブジェクトのis_temporaryフラグがFalseに設定されていることを確認
+        self.schedule.refresh_from_db()
+        self.assertFalse(self.schedule.is_temporary)
+
+        # Scheduleオブジェクトがデータベースに保存されていることを確認
+        self.assertIsNotNone(self.schedule.id)
+
+        # レスポンスの内容を確認
+        self.assertEqual(response.content.decode(), 'Payment successful and message sent.')

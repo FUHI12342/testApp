@@ -1,18 +1,32 @@
 from django.contrib.auth.views import LoginView, LogoutView
-from django.urls import path
+from django.urls import path, include
 from . import views
+from .views import LineEnterView, LineCallbackView,CancelReservationView
+from django.urls import path
 
 
 app_name = 'booking'
 
 urlpatterns = [
     path('', views.StoreList.as_view(), name='store_list'),
+    path('index/', views.Index.as_view(), name='index'),
     path('login/', LoginView.as_view(template_name='admin/login.html'), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('store/<int:pk>/staffs/', views.StaffList.as_view(), name='staff_list'),
     path('staff/<int:pk>/calendar/', views.StaffCalendar.as_view(), name='calendar'),
     path('staff/<int:pk>/calendar/<int:year>/<int:month>/<int:day>/', views.StaffCalendar.as_view(), name='calendar'),
-    path('staff/<int:pk>/booking/<int:year>/<int:month>/<int:day>/<int:hour>/', views.Booking.as_view(), name='booking'),
+    path('staff/<int:pk>/prebooking/<int:year>/<int:month>/<int:day>/<int:hour>/', views.PreBooking.as_view(), name='prebooking'),
+
+    path('line_enter/', LineEnterView.as_view(), name='line_enter'),
+    path('booking/login/line/success/', LineCallbackView.as_view(), name='line_success'),  
+    path('paying_success/', views.PayingSuccessView.as_view(), name='paying_success'),
+    path('line_timer/<str:user_id>/', views.LINETimerView, name='LINETimerView'),
+    path('api/endTime', views.get_end_time),
+    path('api/currentTime', views.get_current_time),
+    #path('api/currentTime', CurrentTimeView.as_view()),
+    path('api/reservation/<int:pk>/', views.get_reservation, name='get_reservation'),
+
+    path('cancel_reservation/<int:schedule_id>/', CancelReservationView.as_view(), name='cancel_reservation'),
 
     path('mypage/', views.MyPage.as_view(), name='my_page'),
     path('mypage/<int:pk>/', views.MyPageWithPk.as_view(), name='my_page_with_pk'),
@@ -22,5 +36,5 @@ urlpatterns = [
     path('mypage/schedule/<int:pk>/', views.MyPageSchedule.as_view(), name='my_page_schedule'),
     path('mypage/schedule/<int:pk>/delete/', views.MyPageScheduleDelete.as_view(), name='my_page_schedule_delete'),
     path('mypage/holiday/add/<int:pk>/<int:year>/<int:month>/<int:day>/<int:hour>/', views.my_page_holiday_add, name='my_page_holiday_add'),
+    path('mypage/holiday/add/<int:pk>/<int:year>/<int:month>/<int:day>/', views.my_page_day_add, name='my_page_day_add'),
 ]
-

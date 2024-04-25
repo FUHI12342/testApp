@@ -1,27 +1,92 @@
-{% extends 'booking/base.html' %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>占いサロンチャンス　オンライン予約ページ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="ここにサイト説明を入れます">
+<meta name="keywords" content="キーワード１,キーワード２,キーワード３,キーワード４,キーワード５">
+{% load static %}
+<script src="{% static 'js/openclose.js' %}"></script>
+<script src="{% static 'js/fixmenu.js' %}"></script>
+<script src="{% static 'js/fixmenu_pagetop.js' %}"></script>
+<script src="{% static 'js/ddmenu_min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<script src="{% static 'js/ddmenu_min.js' %}"></script>
+<!-- the rest of your code -->
+</head>
 
-{% block content %}
+<body>
 
-    <h1>{{ staff.store.name }}店 {{ staff.name }}</h1>
-    <p>{{ start_day }} - {{ end_day }}</p>
-    <table class="table table-bordered text-center" style="table-layout: fixed;width: 100%" border="1">
-        <tr>
-            <td><a href="{% url 'booking:calendar' staff.pk before.year before.month before.day %}">前週</a></td>
-            {% for day in days %}
-                {% if day in public_holidays %}
-                    <th style="background-color: yellow">{{ day | date:"d(D)" }}</th>
-                {% elif day.weekday == 5 %}
-                    <th style="color: blue;">{{ day | date:"d(D)" }}</th>
-                {% elif day.weekday == 6 %}
-                    <th style="color: red;">{{ day | date:"d(D)" }}</th>
-                {% else %}
-                    <th>{{ day | date:"d(D)" }}</th>
-                {% endif %}
-            {% endfor %}
-            <td><a href="{% url 'booking:calendar' staff.pk next.year next.month next.day %}">次週</a></td>
-        </tr>
+    <header>
+    <div class="inner">
+        <!-- <h1 id="logo"><a href="index.html"><img src="imags/logo.png" alt="占いサロンチャンス　オンライン予約サイト(ロゴ)"></a></h1>
+        <p class="login"><a href="login.html">LINEでログイン</a></p>
+        </div> -->
+    </header>
 
-        {% for hour, schedules in calendar.items %}
+<!--PC用（901px以上端末）メニュー-->
+<nav id="menubar" class="nav-fix-pos">
+    <ul class="inner">
+    <li><a href="index.html">ホーム<span>Home</span></a></li>
+    <li><a href="{% url 'booking:store_list' %}">店舗情報<span>Store</span></a>
+    <ul class="ddmenu">
+    <li><a href="calendar.html">高円寺本店</a></li>
+    <li><a href="calendar.html">新大久保店</a></li>
+    </ul>
+    </li>
+    <li><a href="{% url 'booking:store_list' %}">ご予約<span>Reservation</span></a></li>
+    <li><a href="faq.html">所属占い師<span>Fortune-teller</span></a></li>
+    <li><a href="contact.html">お問い合わせ<span>Contact</span></a></li>
+    <li><a href=" ">スタッフページ<span></span></a></li>
+    </ul>
+    </nav>
+    <!--小さな端末用（900px以下端末）メニュー-->
+    <nav id="menubar-s">
+    <ul>
+    <li><a href="index.html">ホーム<span>Home</span></a></li>
+    <li><a href="{% url 'booking:store_list' %}">店舗一覧<span>Store</span></a></li>
+    <li><a href="{% url 'booking:store_list' %}">ご予約<span>Reservation</span></a></li>
+    <li><a href="link.html">所属占い師<span>Fortune-teller</span></a></li>
+    <li><a href="contact.html">お問い合わせ<span>Contact</span></a></li>
+    <li><a href=" "><span>スタッフページ</span> </a></li>
+    </ul>
+    </nav>
+
+<div id="contents" class="inner">
+
+<div id="contents-in">
+    
+<div id="main">
+    
+    <h2>予約カレンダー</h2>
+    <h3>店舗：新大久保店</h3>
+    <p>予約したい日時をカレンダーから選択してください</p>
+       
+    <p style="font-size: 20px;">
+        <strong class="color1">◆{{ start_day }} - {{ end_day }}</strong>(現在選択中の占い師：<strong class="color1">{{ staff.name }}</strong>)</p>
+
+    
+        <table class="table table-bordered text-center" style="table-layout: fixed;width: 100%" border="2">
+            
+            <tr>
+                <td><a href="{% url 'booking:calendar' staff.pk before.year before.month before.day %}">前週</a></td>
+                {% for day in days %}
+                    {% if day in public_holidays %}
+                        <th style="background-color: yellow">{{ day | date:"d(D)" }}</th>
+                    {% elif day.weekday == 5 %}
+                        <th style="color: blue;">{{ day | date:"d(D)" }}</th>
+                    {% elif day.weekday == 6 %}
+                        <th style="color: red;">{{ day | date:"d(D)" }}</th>
+                    {% else %}
+                        <th>{{ day | date:"d(D)" }}</th>
+                    {% endif %}
+                {% endfor %}
+                <td><a href="{% url 'booking:calendar' staff.pk next.year next.month next.day %}">次週</a></td>
+            </tr>
+
+            {% for hour, schedules in calendar.items %}
             <tr style="font-size:12px">
                 <td>
                     {{ hour }}:00
@@ -30,13 +95,14 @@
                     <td>
                         {% if dt <= today %}
                             -
-                        {% elif book %}
-                            <a href="{% url 'booking:booking' staff.pk dt.year dt.month dt.day hour %}">○</a>
+                        {% elif book == 'Booked' %}
+                            <a href="#" class="booked">予約済み</a>
+                        {% elif book == 'Temp' %}
+                            <a class="temporary">仮予約中</a>
                         {% else %}
-                            ×
+                            <a href="{% url 'booking:prebooking' staff.pk dt.year dt.month dt.day hour %}" class="available">空き</a>
                         {% endif %}
                     </td>
-
                 {% endfor %}
                 <td>
                     {{ hour }}:00
@@ -44,5 +110,173 @@
             </tr>
         {% endfor %}
 
-    </table>
-{% endblock %}
+        </table>
+    
+</div>
+<!--/#main-->
+
+<div id="sub">
+
+    <nav>
+    <h2>かんたん♪占い師検索</h2>
+    <ul class="submenu">
+    <li><a href="list_foods.html">占い師で探す</a></li>
+    <li><a href="list_job.html">お店の場所で探す</a></li>
+    <li><a href="list_clinic.html">予約可能な時間で探す</a></li>
+    <li><a href="list_school.html">月間人気ランキング</a></li>
+    </ul>
+    </nav>
+
+    <section>
+
+        <h2>お知らせ</h2>
+    
+        <div class="list-sub">
+        <a href="#">
+        <p class="img t"><img src="{% static 'images/占い師1.jpg' %}" alt="タイトル"></p>
+        <h4>占い師スタッフさん募集！</h4>
+        <p>近くのレンタルスペースですぐ鑑定！</p>
+        </a>
+        </div>
+    
+        <div class="list-sub">
+        <a href="#">
+        <p class="img t"><img src="{% static 'images/space1.jpg' %}" alt="タイトル"></p>
+        <h4>協力オーナーさま募集</h4>
+        <p>空きレンタルスペースを有効活用！1部屋からOK</p>
+        </a>
+        </div>
+    
+        <div class="list-sub">
+        <a href="#">
+        <p class="img t"><img src="{% static 'images/space1.jpg' %}" alt="タイトル"></p>
+        <h4>新大久保店オープン記念</h4>
+        <p>初回鑑定料10%割引キャンペーン実施中！</p>
+        </a>
+        </div>
+    
+        <div class="list-sub">
+        <a href="#">
+        <p class="img t"><img src="{% static 'images/アルバイト.jpg' %}" alt="タイトル"></p>
+        <h4>アルバイト募集！</h4>
+        <p>ネットでかんたん面接！私たちと一緒に働きませんか？</p>
+        </a>
+        </div>
+    
+        </section>
+
+    <div class="box1">
+    <h2 class="mb10">運営会社</h2>
+    <p>株式会社 光画部<br>
+    〒169-0072<br>
+    東京都新宿区大久保2-18-10<br>
+    新宿スカイプラザ1106<br>
+    TEL:070-2833-8381(代表)<br>
+    </div>
+    
+    
+    </div>
+    <!--/#sub-->
+
+    </div>
+    <!--/#contents-in-->
+
+    <div id="side">
+
+    <section>
+
+    <h2>メディア掲載</h2>
+
+    <div class="list-sub">
+    <a href="#" target="_blank">
+        <h3>日刊SPA!（著者の記事一覧ページ）</h3>
+        <a rel="noopener" href="https://nikkan-spa.jp/spa_series_group_name/%E9%A6%AC%E4%B8%BB%E3%81%82%E3%82%89%E3%81%84%E3%81%A1%E3%82%85%EF%BD%9E%E3%81%AE%E5%8D%A0%E3%81%84%E3%81%A7%E9%A6%AC%E8%B2%B7%E3%81%A3%E3%81%A6%E3%81%BF%E3%81%9F" title="馬主あらいちゅ～の占いで馬買ってみた | 連載 | 日刊SPA!" class="blogcard-wrap external-blogcard-wrap a-wrap cf" target="_blank"><div class="blogcard external-blogcard eb-left cf"><div class="blogcard-label external-blogcard-label"><span class="fa"></span></div><figure class="blogcard-thumbnail external-blogcard-thumbnail"><img loading="lazy" decoding="async" src="https://s.wordpress.com/mshots/v1/https%3A%2F%2Fnikkan-spa.jp%2Fspa_series_group_name%2F%25E9%25A6%25AC%25E4%25B8%25BB%25E3%2581%2582%25E3%2582%2589%25E3%2581%2584%25E3%2581%25A1%25E3%2582%2585%25EF%25BD%259E%25E3%2581%25AE%25E5%258D%25A0%25E3%2581%2584%25E3%2581%25A7%25E9%25A6%25AC%25E8%25B2%25B7%25E3%2581%25A3%25E3%2581%25A6%25E3%2581%25BF%25E3%2581%259F?w=160&#038;h=90" alt="" class="blogcard-thumb-image external-blogcard-thumb-image" width="160" height="90" data-pagespeed-url-hash="2303267302" data-pagespeed-onload="pagespeed.CriticalImages.checkImageForCriticality(this);" onload="var elem=this;if (this==window) elem=document.body;elem.setAttribute('data-pagespeed-loaded', 1)"/></figure><div class="blogcard-content external-blogcard-content"><div class="blogcard-title external-blogcard-title">馬主あらいちゅ～の占いで馬買ってみた | 連載 | 日刊SPA!</div><div class="blogcard-snippet external-blogcard-snippet">占い師あらいちゅ～が、占いで馬を買ったり、面白い馬主さんや牧場さんと出会ったりと、地方競馬の馬主生活についてお金のやりくりの話も含めてリアルなところをお伝えします</div></div><div class="blogcard-footer external-blogcard-footer cf"><div class="blogcard-site external-blogcard-site"><div class="blogcard-favicon external-blogcard-favicon"><img loading="lazy" decoding="async" src="https://www.google.com/s2/favicons?domain=https://nikkan-spa.jp/spa_series_group_name/%E9%A6%AC%E4%B8%BB%E3%81%82%E3%82%89%E3%81%84%E3%81%A1%E3%82%85%EF%BD%9E%E3%81%AE%E5%8D%A0%E3%81%84%E3%81%A7%E9%A6%AC%E8%B2%B7%E3%81%A3%E3%81%A6%E3%81%BF%E3%81%9F" alt="" class="blogcard-favicon-image external-blogcard-favicon-image" width="16" height="16" data-pagespeed-url-hash="3553113927" data-pagespeed-onload="pagespeed.CriticalImages.checkImageForCriticality(this);" onload="var elem=this;if (this==window) elem=document.body;elem.setAttribute('data-pagespeed-loaded', 1)"/></div><div class="blogcard-domain external-blogcard-domain">nikkan-spa.jp</div></div></div></div></a>
+        <span class="new">new</span>
+    </a>
+    </div>
+
+    <!-- 外部リンクhttps://bunshun.jp/list/author/5fb48143776561724c010000を貼りたい リンク先からサムネイルを取得したい-->
+    <div class="list-sub">
+        <a href="https://bunshun.jp/list/author/5fb48143776561724c010000" target="_blank">
+        <a rel="noopener" href="https://bunshun.jp/list/author/5fb48143776561724c010000" title="あらいちゅー プロフィール | 文春オンライン" class="blogcard-wrap external-blogcard-wrap a-wrap cf" target="_blank"><div class="blogcard external-blogcard eb-left cf"><div class="blogcard-label external-blogcard-label"><span class="fa"></span></div><figure class="blogcard-thumbnail external-blogcard-thumbnail"><img loading="lazy" decoding="async" src="https://www.senjutsu.jp/wp-content/uploads/cocoon-resources/blog-card-cache/f4593501d74b46f4f983e446b3f34705.png" alt="" class="blogcard-thumb-image external-blogcard-thumb-image" width="160" height="90" data-pagespeed-url-hash="855883102" data-pagespeed-onload="pagespeed.CriticalImages.checkImageForCriticality(this);" onload="var elem=this;if (this==window) elem=document.body;elem.setAttribute('data-pagespeed-loaded', 1)"/></figure><div class="blogcard-content external-blogcard-content"><div class="blogcard-title external-blogcard-title">あらいちゅー プロフィール | 文春オンライン</div><div class="blogcard-snippet external-blogcard-snippet">新大久保に住まう零細企業の経営者。立教大学大学院で大学発ベンチャーの研究に携わり、修士号を得たのち台湾の占い師に勧められて不動産投資の道へ。趣味は中国占術の研究とサウナと火鍋。</div></div><div class="blogcard-footer external-blogcard-footer cf"><div class="blogcard-site external-blogcard-site"><div class="blogcard-favicon external-blogcard-favicon"><img loading="lazy" decoding="async" src="https://www.google.com/s2/favicons?domain=https://bunshun.jp/list/author/5fb48143776561724c010000" alt="" class="blogcard-favicon-image external-blogcard-favicon-image" width="16" height="16" data-pagespeed-url-hash="4162665652" data-pagespeed-onload="pagespeed.CriticalImages.checkImageForCriticality(this);" onload="var elem=this;if (this==window) elem=document.body;elem.setAttribute('data-pagespeed-loaded', 1)"/></div><div class="blogcard-domain external-blogcard-domain">bunshun.jp</div></div></div></div></a>
+        <span class="new">new</span>
+    </a>
+    </div>
+
+
+    <p>
+        <a href="base.html"><img src="{% static 'images/banner1.jpg' %}" alt="採用情報" class="pc"></a>
+        <!-- <a href="base.html"><img src="images/banner1_sh.jpg" alt="採用情報" class="sh"></a> -->
+        </p>
+
+    </section>
+
+    
+        
+
+    
+
+    </div>
+    <!--/#side-->
+
+    </div>
+    <!--/#contents-->
+
+</section>
+
+    <footer>
+        <div id="footermenu" class="inner">
+            <ul>
+            <li class="title">メニュータイトル</li>
+            <li><a href="index.html">ホーム</a></li>
+            <li><a href="{% url 'booking:store_list' %}">ご予約はこちらから</a>/li>
+            <li><a href="contact.html">お問い合わせ</a></li>
+            <li><a href="company.html">会社概要</a></li>
+            </ul>
+            
+            <ul>
+            <li class="title">スタッフ用ページ</li>
+          
+            <li><a href="{% url 'booking:login' %}">ログイン</a></li>
+            <li><a href="{% url 'booking:my_page' %}">マイページ</a></li>
+            
+            </ul>
+            
+            <ul>
+                <li class="title">外部リンク</li>
+                <li><a href="https://www.senjutsu.jp/">大久保占い研究室</a></li>
+                <li><a href="https://www.senjutsu.jp/forums/forum/uranai">占い掲示板</a></li>
+                <li><a href="https://www.senjutsu.jp/tarot">無料のタロット占い</a></li>
+            </ul>
+            
+            <ul>
+                <li class="title">占いサロンとは？</li>
+                <li><a href="list_foods.html">ごあいさつ</a></li>
+                <li><a href="list_job.html">初めての方へ</a></li>
+                <li><a href="list_job.html">占いサロンのココがすごい！</a></li>
+                </ul>
+            <ul>
+                <li class="title">その他</li>
+                <li><a href="list_foods.html">プライバシーポリシー</a></li>
+                <li><a href="list_job.html">サイトマップ</a></li>
+                <li><a href="list_clinic.html">利用規約</a></li>
+                </ul>
+            </div>
+        
+    </footer>
+
+    <!--ページの上部に戻る「↑」ボタン-->
+    <p class="nav-fix-pos-pagetop"><a href="#">↑</a></p>
+
+    <!--メニュー開閉ボタン-->
+    <div id="menubar_hdr" class="close"></div>
+    <!--メニューの開閉処理条件設定　900px以下-->
+    <script>
+    if (OCwindowWidth() <= 900) {
+        open_close("menubar_hdr", "menubar-s");
+    }
+    </script>
+
+
+</body>
+</html>
