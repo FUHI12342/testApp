@@ -6,7 +6,6 @@ import jwt
 import requests
 import secrets
 from datetime import timedelta
-from celery import shared_task
 from django.utils import timezone
 from .models import Schedule
 from django.conf import settings
@@ -748,10 +747,16 @@ def my_page_day_delete(request, pk, year, month, day):
     raise PermissionDenied
 
 print('ビューのタスク.py')
-@shared_task
+
 def delete_temporary_schedules():
-    #print('delete_temporary_schedules')
-    now = timezone.now()
-    #print(str(now) + "現在時刻") 
-    Schedule.objects.filter(temporary_booked_at__lt=now - timezone.timedelta(minutes=15), is_temporary=True).delete()
-    #print('delete_temporary_schedules終了')
+    from celery import shared_task
+
+    @shared_task
+    def _delete_temporary_schedules():
+        #print('delete_temporary_schedules')
+        now = timezone.now()
+        #print(str(now) + "現在時刻") 
+        Schedule.objects.filter(temporary_booked_at__lt=now - timezone.timedelta(minutes=15), is_temporary=True).delete()
+        #print('delete_temporary_schedules終了')
+
+    return _delete_temporary_schedules()
