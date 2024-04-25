@@ -30,7 +30,7 @@ SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 # 本番
 DEBUG = False
 
-ALLOWED_HOSTS = ['104.248.154.35']
+ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
