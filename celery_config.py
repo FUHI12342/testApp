@@ -6,11 +6,6 @@ app = Celery('booking')
 # 'project.settings'から設定を読み込む
 app.config_from_object('project.settings', namespace='CELERY')
 
-# 非推奨の設定を新しいものに更新
-app.conf.task_serializer = 'json'
-app.conf.accept_content = ['json']
-app.conf.broker_connection_retry_on_startup = True
-
 # Beatスケジューラの設定
 app.conf.beat_schedule = {
     'delete-every-minute': {
@@ -19,5 +14,8 @@ app.conf.beat_schedule = {
     },
 }
 
+print('Before autodiscover_tasks:', app)
 app.autodiscover_tasks()
+print('After autodiscover_tasks:', app)
+
 print('celery_config.py終了')
