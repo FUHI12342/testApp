@@ -40,7 +40,7 @@ STATICFILES_DIRS = [
 
 # 本番環境設定
 DEBUG = False
-ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1', '104.248.154.35']
+ALLOWED_HOSTS = ['timebaibai.com', '104.248.154.35']
 STATIC_ROOT = '/usr/share/nginx/html/static'
 MEDIA_ROOT = '/usr/share/nginx/html/media/'
 
