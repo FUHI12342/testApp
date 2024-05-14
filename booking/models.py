@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from django.db import models
-from django.utils.crypto import get_random_string
 
 class Timer(models.Model):
     user_id = models.CharField(max_length=255, unique=True)
     start_time = models.DateTimeField(auto_now_add=True)
-
+    # class Meta:
+    #     app_label = 'booking' 
+        
 class Store(models.Model):
     """店舗"""
     name = models.CharField('店名', max_length=255)
@@ -18,8 +18,8 @@ class Store(models.Model):
 class Staff(models.Model):
     """占い師スタッフ"""
     name = models.CharField('表示名', max_length=50)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, verbose_name='ログインユーザー', on_delete=models.CASCADE
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, verbose_name='ログインユーザー', on_delete=models.CASCADE, related_name='staff'
     )
     store = models.ForeignKey(Store, verbose_name='店舗', on_delete=models.CASCADE)
     line_id = models.CharField('LINE ID', max_length=50, null=True, blank=True)  # ラインID

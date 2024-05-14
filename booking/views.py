@@ -1,16 +1,15 @@
 from __future__ import absolute_import, unicode_literals
 import datetime
-import os
 import json
 import jwt
 import requests
 import secrets
 from datetime import timedelta
 from django.utils import timezone
-from .models import Schedule
+from celery import shared_task
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login, authenticate
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
@@ -20,17 +19,9 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 from django.views.decorators.http import require_POST
-
-from .models import Store, Staff, Schedule
-from .utils import get_line_profile
-
-if not settings.configured:
-    settings.configure()
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
-
-import django
-django.setup()
+from booking.models import Store, Staff, Schedule, Customer, Timer
+import sys
+print('環境変数1' + str(sys.path))
 
 User = get_user_model()
 class Index(generic.TemplateView):
@@ -43,8 +34,6 @@ class LineEnterView(View):
         state = secrets.token_hex(10)
         request.session['state'] = state
         
-        print('プリント1111')
-        print('すていと' + state)
         print('セッション' + str(request.session.items())) 
         
         context = {
@@ -70,7 +59,6 @@ class LineEnterView(View):
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
-from .models import Timer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import render
@@ -85,7 +73,7 @@ def LINETimerView(request, user_id):
         timer.save()
 
     # タイマーの終了時間を設定します（ここでは開始時間から10分後とします）
-    timer.end_time = timer.start_time + timedelta(minutes=10)
+    timer.end_time = timer.start_time + timedelta(minutes=60)
     timer.save()
 
     # 終了時間をcontextに追加します
@@ -106,17 +94,13 @@ def get_current_time(request):
     # 現在時間をISO 8601形式の文字列として返す
     return JsonResponse({'time': timezone.now().isoformat()})
 
-from django.http import JsonResponse
-
 def get_reservation_times(request, pk):
     # pkを使用して予約を取得
     schedule = get_object_or_404(Schedule, pk=pk)
     # 開始時間と終了時間をISO 8601形式の文字列として返す
     return JsonResponse({'startTime': schedule.start.isoformat(), 'endTime': schedule.end.isoformat()})
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Schedule
+
 
 def get_reservation(request, pk):
     # pkを使用して予約を取得
@@ -126,17 +110,16 @@ def get_reservation(request, pk):
         'startTime': schedule.start.isoformat(),
         'endTime': schedule.end.isoformat()
     })
-    
-from rest_framework.views import APIView
-from rest_framework.response import Response
 
+
+     
 class CurrentTimeView(APIView):
     def get(self, request):
         import datetime
         current_time = datetime.datetime.now()
         return Response({"current_time": str(current_time)})
     
-from django.shortcuts import redirect
+    
 from django.http import HttpResponseBadRequest
 
 LINE_CHANNEL_ID = settings.LINE_CHANNEL_ID  # 自身のLINEチャンネルIDを入力
@@ -183,8 +166,6 @@ class LineCallbackView(View):
 
                     # LINEユーザーIDを取得
                     line_user_id = user_profile['sub']
-                    
-                    from .models import Customer
 
                     try:
                         customer = Customer.objects.get(line_user_id=line_user_id)
@@ -232,12 +213,14 @@ class LineCallbackView(View):
                         if temporary_booking is not None:
                             # 価格情報を取得
                             price = temporary_booking['price']
+                            schedule_id = temporary_booking['schedule_id']
+                            
                         else:
                             print("仮予約情報がセッションに存在しません。")
                             price = None  # または適切なデフォルト値を設定
 
                         # 決済サービスのAPIを使用して決済URLを生成
-                        payment_api_url = 'https://api.coiney.io/api/v1/payments'
+                        payment_api_url = settings.PAYMENT_API_URL
                         headers = {
                             'Authorization': 'Bearer ' + settings.PAYMENT_API_KEY,
                             'Content-Type': 'application/json'  
@@ -247,15 +230,14 @@ class LineCallbackView(View):
                             "amount": price,  # 仮予約情報から取得した価格情報を設定
                             "currency": "jpy",
                             "locale": "ja_JP",
-                            "redirectUrl": "http://127.0.0.1:8000/booking",
-                            "cancelUrl": "https://coiney.com/cancel",
-                            "webhookUrl": "http://127.0.0.1:8000/booking/payingsuccess",
+                            "cancelUrl": settings.CANCEL_URL,
+                            "webhookUrl": settings.WEBHOOK_URL,
                             "method": "creditcard",
                             "subject": "ご予約料金",
                             "description": "ウェブサイトからの支払い",
-                            "remarks": "仮予約から15分を過ぎますと自動的にキャンセルとなります。あらかじめご了承ください。",
+                            "remarks": "仮予約から10分を過ぎますと自動的にキャンセルとなります。あらかじめご了承ください。",
                             "metadata": {
-                                "orderId": "1234"
+                                "orderId":schedule_id 
                             },
                             "expiredOn": expired_on_str
                         }
@@ -298,15 +280,14 @@ from django.http import JsonResponse
 from django.views import View
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
-from .models import Schedule  # 仮予約と本予約情報を管理するモデル
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
+from django.urls import reverse
+from urllib.parse import quote
+from linebot.exceptions import LineBotApiError
 
 class PayingSuccessView(View):
     def post(self, request):
-        from linebot import LineBotApi
-        from linebot.models import TextSendMessage
-        from django.urls import reverse
-        from urllib.parse import quote
-        from linebot.exceptions import LineBotApiError
 
         # 決済サービスからのレスポンスを解析
         payment_response = request.POST
@@ -314,8 +295,11 @@ class PayingSuccessView(View):
         
         # 決済が成功したかどうかを確認
         if payment_response.get('status') == 'paid':
-            # 予約情報を取得（ここでは仮にBookingというモデルがあるとします）
-            schedule = Schedule.objects.get()
+            # 注文IDを取得
+            order_id = payment_response.get('orderId')
+
+            # 注文IDを使用して予約情報を取得（ここでは仮にBookingというモデルがあるとします）
+            schedule = Schedule.objects.get(order_id=order_id)
             print('スケジュール' + str(schedule))
             
             # 仮予約フラグをFalseに設定
@@ -364,7 +348,7 @@ class PayingSuccessView(View):
         encoded_timer_url = quote(timer_url)
 
         # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
-        message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'http://127.0.0.1:8000' + encoded_timer_url + '>'
+        message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
         message = TextSendMessage(text=message_text)
         line_bot_api.push_message(user_id, message)
         print('ユーザーに通知')
@@ -479,9 +463,7 @@ class StaffCalendar(generic.TemplateView):
         context['public_holidays'] = settings.PUBLIC_HOLIDAYS
         return context
     
-from .models import Customer
 from django import forms
-from .models import Schedule
 
 class ScheduleForm(forms.ModelForm):
     class Meta:
@@ -565,40 +547,11 @@ class PreBooking(generic.CreateView):
 
 
         return redirect('booking:line_enter')
-
-# class Booking(generic.CreateView):
-#     model = Schedule
-#     fields = ('user',)
-#     template_name = 'booking/booking.html'
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['staff'] = get_object_or_404(Staff, pk=self.kwargs['pk'])
-#         return context
-
-#     def form_valid(self, form):
-#         staff = get_object_or_404(Staff, pk=self.kwargs['pk'])
-#         year = self.kwargs.get('year')
-#         month = self.kwargs.get('month')
-#         day = self.kwargs.get('day')
-#         hour = self.kwargs.get('hour')
-#         start = datetime.datetime(year=year, month=month, day=day, hour=hour)
-#         end = datetime.datetime(year=year, month=month, day=day, hour=hour + 1)
-#         if Schedule.objects.filter(staff=staff, start=start).exists():
-#             messages.error(self.request, 'すみません、入れ違いで予約がありました。別の日時はどうですか。')
-#         else:
-#             schedule = form.save(commit=False)
-#             schedule.staff = staff
-#             schedule.start = start
-#             schedule.end = end
-#             schedule.save()
-#         return redirect('booking:calendar', pk=staff.pk, year=year, month=month, day=day)
-
+    
+    
 from django.views import View
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
-from linebot.exceptions import LineBotApiError
-from .models import Schedule
 
 class CancelReservationView(View):
     def post(self, request, schedule_id):
@@ -689,9 +642,7 @@ class MyPageScheduleDelete(OnlyScheduleMixin, generic.DeleteView):
     model = Schedule
     success_url = reverse_lazy('booking:my_page')
 
-
-import sys
-print(sys.path)
+print('環境変数2' + str(sys.path))
 from django.shortcuts import render
 from .forms import YourForm
 
@@ -709,7 +660,6 @@ def your_view(request):
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.views import generic
-from .models import Schedule, Staff
 import datetime
 
 @require_POST
@@ -747,16 +697,31 @@ def my_page_day_delete(request, pk, year, month, day):
     raise PermissionDenied
 
 print('ビューのタスク.py')
-
+@shared_task
 def delete_temporary_schedules():
-    from celery import shared_task
+    print('delete_temporary_schedules')
+    # 関数の本体
+    now = timezone.now()
+    print(str(now) + "現在時刻")
+    
+    Schedule.objects.filter(temporary_booked_at__lt=now - timezone.timedelta(minutes=10), is_temporary=True).delete()
+    print('delete_temporary_schedules終了')
+    
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from .forms import StaffForm  # Django管理画面でのフォームに対応するフォームをインポートします
 
-    @shared_task
-    def _delete_temporary_schedules():
-        #print('delete_temporary_schedules')
-        now = timezone.now()
-        #print(str(now) + "現在時刻") 
-        Schedule.objects.filter(temporary_booked_at__lt=now - timezone.timedelta(minutes=15), is_temporary=True).delete()
-        #print('delete_temporary_schedules終了')
-
-    return _delete_temporary_schedules()
+def upload_file(request):
+    if request.method == 'POST':
+        form = StaffForm(request.POST, request.FILES)
+        print('フォームの中身' + str(form))
+        if form.is_valid():
+            form.save()
+            print('フォームのセーブ')
+            return HttpResponseRedirect('/success/url/')  # 成功時のリダイレクト先URLを指定します
+        else:
+            print('フォームのエラー'+ form.errors)
+    else:
+        form = StaffForm()
+        print('フォームの中身２' + str(form))
+    return render(request, 'upload.html', {'form': form})

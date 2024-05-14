@@ -27,7 +27,7 @@ urlpatterns = [
     path('api/reservation/<int:pk>/', views.get_reservation, name='get_reservation'),
 
     path('cancel_reservation/<int:schedule_id>/', CancelReservationView.as_view(), name='cancel_reservation'),
-
+    path('upload/', views.upload_file, name='upload_file'),
     path('mypage/', views.MyPage.as_view(), name='my_page'),
     path('mypage/<int:pk>/', views.MyPageWithPk.as_view(), name='my_page_with_pk'),
     path('mypage/<int:pk>/calendar/', views.MyPageCalendar.as_view(), name='my_page_calendar'),

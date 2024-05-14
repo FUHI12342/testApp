@@ -22,15 +22,27 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 
-# ローカル
-# DEBUG = True
 
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# 静的ファイルの設定
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
-# 本番
-DEBUG = False
+#ローカル環境
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1']
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
+]
+
+# # 本番環境設定
+# DEBUG = False
+# ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1', '104.248.154.35']
+# STATIC_ROOT = '/usr/share/nginx/html/static'
+# MEDIA_ROOT = '/usr/share/nginx/html/media/'
 
 
 # Application definition
@@ -43,8 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    #'testApp', 
+    'django.contrib.staticfiles', 
+    #'testApp',
     'rest_framework'
 ]
 
@@ -152,19 +164,6 @@ USE_TZ = True
 from dotenv import load_dotenv
 import os
 
-# 静的ファイルの設定
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
-]
-
-
-#本番環境での静的ファイルの設定
-#STATIC_ROOT = '/usr/share/nginx/html/static'
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/usr/share/nginx/html/media'
 
 
 import datetime
@@ -218,49 +217,22 @@ LINE_CHANNEL_ID = "2003969601"
 
 LINE_CHANNEL_SECRET = "0f65e88a404ba95833bca990cf312e40"
 
-LINE_REDIRECT_URL = 'http://127.0.0.1:8000/booking/login/line/success/' # リダイレクトURL
-
-# import requests
-# from linebot import LineBotApi
-# from linebot.models import TextSendMessage
-
-# # LINE Messaging APIのアクセストークン
-# line_access_token = 'SwYJEbvMawMifRQ2yXIvhLLZJHwsBAOQzo4uGOrwIACTOybf3YbvJsWxVWN7KOtEcQJnpjQ6A4nYsc9+8is7ZYU2aIyrc2w1XESYFUOlWb17nScbom6jUxW/8UeejLpoFBPwErqH6JKes7SMSYd/PgdB04t89/1O/w1cDnyilFU='
+LINE_REDIRECT_URL = 'https://timebaibai.com/booking/login/line/success/' # リダイレクトURL
 
 # # 決済サービスのAPIキー
 PAYMENT_API_KEY = 'sk_live_7ldzwc0xXXyVcarFazjHEEN7bTvXpa7x'
 
-# # ユーザーID（LINEログイン後に取得）
-# user_id = 'USER_ID'
-
-# # LINE Messaging APIの初期化
-# line_bot_api = LineBotApi(line_access_token)
-
-# # 決済サービスのAPIを使用して決済URLを生成
-# payment_api_url = 'https://api.payment-service.com/create-payment-url'
-# headers = {'Authorization': 'Bearer ' + payment_api_key}
-# data = {
-#     # 必要なパラメータを設定
-# }
-# response = requests.post(payment_api_url, headers=headers, data=data)
-# payment_url = response.json()['payment_url']
-
-# # LINE Messaging APIを使用してメッセージを送信
-# message = TextSendMessage(text='こちらのURLから決済を行ってください: ' + payment_url)
-# line_bot_api.push_message(user_id, message)
-
 # LINE Messaging APIのアクセストークン
 LINE_ACCESS_TOKEN = 'SwYJEbvMawMifRQ2yXIvhLLZJHwsBAOQzo4uGOrwIACTOybf3YbvJsWxVWN7KOtEcQJnpjQ6A4nYsc9+8is7ZYU2aIyrc2w1XESYFUOlWb17nScbom6jUxW/8UeejLpoFBPwErqH6JKes7SMSYd/PgdB04t89/1O/w1cDnyilFU='
 
-# ユーザーIDとメッセージ
 #ユーザーIDはログイン後に取得
 user_id = 'Udf02e8cec56a91be9005b6f10c6b7a56'
-print('セッティング７７７')
-
-# settings.py
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CELERY_broker_url = 'redis://localhost:6379/0'
 accept_content = ['json']
 task_serializer = 'json'
 
+#決済サービス関連
+PAYMENT_API_URL = 'https://api.coiney.io/api/v1/payments'
+WEBHOOK_URL = "https://timebaibai.com/paying_success/"
+CANCEL_URL = "https://coiney.com/cancel/"

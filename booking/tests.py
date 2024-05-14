@@ -3,7 +3,9 @@ from django.shortcuts import resolve_url, get_object_or_404
 from django.test import TestCase
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils import timezone
-from .models import Schedule, Staff, Store, Customer
+from booking.models import Schedule, Staff, Store, Customer
+import os
+print(os.environ['PYTHONPATH'])
 
 batu = '×'
 maru = '○'
@@ -501,18 +503,18 @@ class MyPageHolidayAddViewTests(TestCase):
 
 from django.test import TestCase, Client
 from django.urls import reverse
-
 from django.contrib.auth.models import User
 from linebot import LineBotApi
 from django.conf import settings
-LINE_CHANNEL_ID = settings.LINE_CHANNEL_ID  
-LINE_CHANNEL_SECRET = settings.LINE_CHANNEL_SECRET
-REDIRECT_URL = settings.LINE_REDIRECT_URL
 from unittest.mock import Mock  
 from unittest.mock import patch
+from django.core.management import call_command
 
 class PayingSuccessViewTest(TestCase):
     def setUp(self):
+        super().setUp()
+        # フィクスチャをロード
+        call_command('loaddata', 'initial', verbosity=0)
         self.client = Client()
         line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
         # テスト用のユーザーIDを設定
@@ -542,9 +544,10 @@ class PayingSuccessViewTest(TestCase):
             staff_id=self.staff.id,# staff_idフィールドに先ほど作成したStaffオブジェクトのIDを設定
             customer_id=self.customer.id  # customer_idフィールドに先ほど作成したCustomerオブジェクトのIDを設定
         )
-    @patch('linebot.LineBotApi.push_message')
+
+    #@patch('linebot.LineBotApi.push_message')
     
-    def test_paying_success_view(self, mock_push_message):
+    def test_paying_success_view(self):
         # CoineyKit-Paygeから送られてくるであろうデータを模擬的に作成
         data = {
             'amount': '1000',
@@ -569,3 +572,17 @@ class PayingSuccessViewTest(TestCase):
 
         # レスポンスの内容を確認
         self.assertEqual(response.content.decode(), 'Payment successful and message sent.')
+
+# from django.core.files.uploadedfile import SimpleUploadedFile
+# from django.test import TestCase, Client
+# from .models import Staff
+
+# class UploadFileTest(TestCase):
+#     def setUp(self):
+#         self.client = Client()
+
+#     def test_upload_file(self):
+#         with open('path/to/your/test/image.jpg', 'rb') as f:
+#             response = self.client.post('/your/upload/url/', {'thumbnail': SimpleUploadedFile(f.name, f.read())})
+#         self.assertEqual(response.status_code, 302)  # リダイレクトが期待される
+#         self.assertTrue(Staff.objects.filter(thumbnail='thumbnails/image.jpg').exists())  # ファイルが保存されていることを確認
