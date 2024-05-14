@@ -28,7 +28,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 # #ローカル環境
-# DEBUG = True
+DEBUG = True
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
@@ -39,7 +39,7 @@ STATICFILES_DIRS = [
 ]
 
 # 本番環境設定
-DEBUG = False
+#DEBUG = False
 ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1', '104.248.154.35']
 STATIC_ROOT = '/usr/share/nginx/html/static'
 MEDIA_ROOT = '/usr/share/nginx/html/media/'
