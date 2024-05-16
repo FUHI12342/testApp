@@ -42,10 +42,11 @@ STATICFILES_DIRS = [
 ]
 
 # 本番環境設定
-DEBUG = False
-ALLOWED_HOSTS = ['timebaibai.com', '104.248.154.35']
-STATIC_ROOT = '/usr/share/nginx/html/static'
-MEDIA_ROOT = '/usr/share/nginx/html/media/'
+DEBUG = os.getenv('DEBUG') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+STATIC_ROOT = os.getenv('STATIC_ROOT')
+MEDIA_ROOT = os.getenv('MEDIA_ROOT')
+
 
 
 # Application definition
@@ -104,10 +105,15 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -209,7 +215,6 @@ PUBLIC_HOLIDAYS = [
 LOGIN_URL = 'booking:login'
 LOGIN_REDIRECT_URL = 'booking:store_list' # ログイン後にリダイレクトするURL
 LOGOUT_REDIRECT_URL = 'booking:login' 
-
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 import os
 
@@ -223,4 +228,3 @@ CELERY_broker_url = os.getenv('CELERY_broker_url')
 PAYMENT_API_URL = os.getenv('PAYMENT_API_URL')
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')
 CANCEL_URL = os.getenv('CANCEL_URL')
-WEBHOOK_URL_BASE = os.getenv('WEBHOOK_URL_BASE')
