@@ -298,6 +298,7 @@ from django.http import JsonResponse
 from django.views import View
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
+<<<<<<< HEAD
 from .models import Schedule  # 仮予約と本予約情報を管理するモデル
 
 class PayingSuccessView(View):
@@ -308,14 +309,35 @@ class PayingSuccessView(View):
         from urllib.parse import quote
         from linebot.exceptions import LineBotApiError
 
+=======
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
+from django.urls import reverse
+from urllib.parse import quote
+from linebot.exceptions import LineBotApiError
+from django.http import JsonResponse
+import json
+
+class PayingSuccessView(View):
+    def post(self, request):
+>>>>>>> 7ec94da99220822d678d6c33d571db7398e888ec
         # 決済サービスからのレスポンスを解析
-        payment_response = request.POST
+        payment_response = json.loads(request.body)
         print('payment_response' + str(payment_response))
         
         # 決済が成功したかどうかを確認
+<<<<<<< HEAD
         if payment_response.get('status') == 'paid':
             # 予約情報を取得（ここでは仮にBookingというモデルがあるとします）
             schedule = Schedule.objects.get()
+=======
+        if payment_response.get('type') == 'payment.succeeded':
+            # 注文IDを取得
+            order_id = payment_response.get('orderId')
+
+            # 注文IDを使用して予約情報を取得（ここでは仮にBookingというモデルがあるとします）
+            schedule = Schedule.objects.get(order_id=order_id)
+>>>>>>> 7ec94da99220822d678d6c33d571db7398e888ec
             print('スケジュール' + str(schedule))
             
             # 仮予約フラグをFalseに設定
@@ -371,7 +393,7 @@ class PayingSuccessView(View):
         print(message_text)
         
         # レスポンスを直接作成して返す
-        return HttpResponse('Payment successful and message sent.', content_type='text/plain')
+        return JsonResponse({'status': 'success'})
     
 class LineSuccessView(View):
     def get(self, request):
