@@ -213,7 +213,7 @@ class LineCallbackView(View):
                         if temporary_booking is not None:
                             # 価格情報を取得
                             price = temporary_booking['price']
-                            schedule_id = temporary_booking['schedule_id']
+                            schedule_reservation_number = temporary_booking['reservation_number']
                             
                         else:
                             print("仮予約情報がセッションに存在しません。")
@@ -227,7 +227,7 @@ class LineCallbackView(View):
                         }
 
                         # Webhook URLを動的に設定
-                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_id)
+                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_reservation_number)
 
                         data = {
                             "amount": price,  # 仮予約情報から取得した価格情報を設定
@@ -476,9 +476,9 @@ class PreBooking(generic.CreateView):
             print('仮予約完了')
             
             
-            # 仮予約情報をセッションに保存
+           # 仮予約情報をセッションに保存
             self.request.session['temporary_booking'] = {
-                'schedule_id': schedule.id,
+                'reservation_number': str(schedule.reservation_number),
                 'customer_id': customer.id,
                 'start': start.isoformat(),
                 'end': end.isoformat(),
