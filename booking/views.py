@@ -243,13 +243,15 @@ class LineCallbackView(View):
                             'Content-Type': 'application/json'  
                         }
 
+                        # Webhook URLを動的に設定
+                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_id)
+
                         data = {
                             "amount": price,  # 仮予約情報から取得した価格情報を設定
                             "currency": "jpy",
                             "locale": "ja_JP",
-                            "redirectUrl": "http://127.0.0.1:8000/booking",
-                            "cancelUrl": "https://coiney.com/cancel",
-                            "webhookUrl": "http://127.0.0.1:8000/booking/payingsuccess",
+                            "cancelUrl": settings.CANCEL_URL,
+                            "webhookUrl": webhook_url,  # ここで設定
                             "method": "creditcard",
                             "subject": "ご予約料金",
                             "description": "ウェブサイトからの支払い",
@@ -259,6 +261,7 @@ class LineCallbackView(View):
                             },
                             "expiredOn": expired_on_str
                         }
+                        # 以下のコードは変更なし...
                         payment_url = None  # 初期化
 
                         response = requests.post(payment_api_url, headers=headers, data=json.dumps(data))  # json.dumpsを使用
@@ -301,79 +304,15 @@ from linebot.models import TextSendMessage
 from django.urls import reverse
 from urllib.parse import quote
 from linebot.exceptions import LineBotApiError
-from django.http import JsonResponse
 import json
 
+
 class PayingSuccessView(View):
-    def post(self, request):
+    @classmethod
+    def post(cls, request):
         # 決済サービスからのレスポンスを解析
         payment_response = json.loads(request.body)
-        print('payment_response' + str(payment_response))
-        
-        # 決済が成功したかどうかを確認
-        if payment_response.get('type') == 'payment.succeeded':
-            # 注文IDを取得
-            order_id = payment_response.get('orderId')
-
-            # 注文IDを使用して予約情報を取得（ここでは仮にBookingというモデルがあるとします）
-            schedule = Schedule.objects.get(order_id=order_id)
-
-            print('スケジュール' + str(schedule))
-            
-            # 仮予約フラグをFalseに設定
-            schedule.is_temporary = False
-
-            # 予約情報を保存
-            schedule.save()
-            print('本予約情報として保存')
-            
-             # LINE Messaging APIの初期化
-            line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
-
-            # スタッフのLINEアカウントIDを取得
-            staff_line_account_id = schedule.staff.line_id
-            import pytz
-
-            # ローカルタイムゾーンを取得
-            local_tz = pytz.timezone('Asia/Tokyo')
-
-            # schedule.startをローカルタイムゾーンに変換
-            local_time = schedule.start.astimezone(local_tz)
-            
-            print('スタッフのLINEアカウントID:' + str(staff_line_account_id))
-            print(schedule.start)
-            try:
-                # 予約完了情報をメッセージとして送信
-                message_text = '予約が完了しました。予約者: {}, 日時: {}'.format(schedule.customer.name, local_time)
-                message = TextSendMessage(text=message_text)
-                line_bot_api.push_message(staff_line_account_id, message)  # スタッフに通知
-                print('スタッフに通知')
-                print(message_text)
-                
-            except LineBotApiError as e:
-                # エラーハンドリング
-                print(e)
-                
-        # セッションからプロフィールを取得します。
-        profile = request.session.get('profile')
-        user_id = profile['sub']  # 'sub'はLINEのユーザーIDを表す
-
-        # LINE Messaging APIの初期化
-        line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
-        
-        # タイマーURLを生成
-        timer_url = reverse('booking:LINETimerView', args=[user_id])
-        encoded_timer_url = quote(timer_url)
-
-        # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
-        message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'http://127.0.0.1:8000' + encoded_timer_url + '>'
-        message = TextSendMessage(text=message_text)
-        line_bot_api.push_message(user_id, message)
-        print('ユーザーに通知')
-        print(message_text)
-        
-        # レスポンスを直接作成して返す
-        return JsonResponse({'status': 'success'})
+        return process_payment(payment_response, request)
     
 class LineSuccessView(View):
     def get(self, request):
@@ -567,36 +506,6 @@ class PreBooking(generic.CreateView):
 
 
         return redirect('booking:line_enter')
-
-# class Booking(generic.CreateView):
-#     model = Schedule
-#     fields = ('user',)
-#     template_name = 'booking/booking.html'
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['staff'] = get_object_or_404(Staff, pk=self.kwargs['pk'])
-#         return context
-
-#     def form_valid(self, form):
-#         staff = get_object_or_404(Staff, pk=self.kwargs['pk'])
-#         year = self.kwargs.get('year')
-#         month = self.kwargs.get('month')
-#         day = self.kwargs.get('day')
-#         hour = self.kwargs.get('hour')
-#         start = datetime.datetime(year=year, month=month, day=day, hour=hour)
-#         end = datetime.datetime(year=year, month=month, day=day, hour=hour + 1)
-#         if Schedule.objects.filter(staff=staff, start=start).exists():
-#             messages.error(self.request, 'すみません、入れ違いで予約がありました。別の日時はどうですか。')
-#         else:
-#             schedule = form.save(commit=False)
-#             schedule.staff = staff
-#             schedule.start = start
-#             schedule.end = end
-#             schedule.save()
-#         return redirect('booking:calendar', pk=staff.pk, year=year, month=month, day=day)
-
-from django.views import View
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 from linebot.exceptions import LineBotApiError
@@ -623,7 +532,7 @@ class CancelReservationView(View):
         line_bot_api.push_message(customer_line_account_id, message)
 
         return render(request, 'booking/cancel_success.html')
-    
+
 class MyPage(LoginRequiredMixin, generic.TemplateView):
     template_name = 'booking/my_page.html'
 
@@ -778,3 +687,94 @@ def upload_file(request):
         form = StaffForm()
         print('フォームの中身２' + str(form))
     return render(request, 'upload.html', {'form': form})
+
+import hmac
+import hashlib
+from django.views.decorators.csrf import csrf_exempt
+
+def process_payment(payment_response, request):
+    print('payment_response' + str(payment_response))
+    
+    # 決済が成功したかどうかを確認
+    if payment_response.get('type') == 'payment.succeeded':
+        # 注文IDを取得
+        order_id = payment_response.get('orderId')
+        schedule = Schedule.objects.get(order_id=order_id)
+        print('スケジュール' + str(schedule))
+        
+        # 仮予約フラグをFalseに設定
+        schedule.is_temporary = False
+
+        # 予約情報を保存
+        schedule.save()
+        print('本予約情報として保存')
+        
+         # LINE Messaging APIの初期化
+        line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
+
+        # スタッフのLINEアカウントIDを取得
+        staff_line_account_id = schedule.staff.line_id
+        import pytz
+
+        # ローカルタイムゾーンを取得
+        local_tz = pytz.timezone('Asia/Tokyo')
+
+        # schedule.startをローカルタイムゾーンに変換
+        local_time = schedule.start.astimezone(local_tz)
+        
+        print('スタッフのLINEアカウントID:' + str(staff_line_account_id))
+        print(schedule.start)
+        try:
+            # 予約完了情報をメッセージとして送信
+            message_text = '予約が完了しました。予約者: {}, 日時: {}'.format(schedule.customer.name, local_time)
+            message = TextSendMessage(text=message_text)
+            line_bot_api.push_message(staff_line_account_id, message)  # スタッフに通知
+            print('スタッフに通知')
+            print(message_text)
+            
+        except LineBotApiError as e:
+            # エラーハンドリング
+            print(e)
+            
+    # セッションからプロフィールを取得します。
+    profile = request.session.get('profile')
+    user_id = profile['sub']  # 'sub'はLINEのユーザーIDを表す
+
+    # LINE Messaging APIの初期化
+    line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
+    
+    # タイマーURLを生成
+    timer_url = reverse('booking:LINETimerView', args=[user_id])
+    encoded_timer_url = quote(timer_url)
+
+    # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
+    message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
+    message = TextSendMessage(text=message_text)
+    line_bot_api.push_message(user_id, message)
+    print('ユーザーに通知')
+    print(message_text)
+    
+    # レスポンスを直接作成して返す
+    return JsonResponse({'status': 'success'})
+
+@csrf_exempt
+def coiney_webhook(request):
+    if request.method == 'POST':
+        # Coineyからの署名を取得
+        signature = request.META.get('HTTP_X_COINEY_SIGNATURE')
+
+        # リクエストボディとシークレットキーを使用して署名を計算
+        expected_signature = hmac.new(
+            bytes(settings.PAYMENT_API_KEY, 'utf-8'),
+            msg=request.body,
+            digestmod=hashlib.sha256
+        ).hexdigest()
+
+        # 受信した署名と計算した署名を比較
+        if not hmac.compare_digest(signature, expected_signature):
+            return JsonResponse({'error': 'invalid signature'}, status=400)
+
+        # 署名が一致した場合、PayingSuccessViewのpostメソッドを呼び出す
+        return PayingSuccessView.post(request)
+    else:
+        return JsonResponse({'error': 'invalid request'}, status=400)

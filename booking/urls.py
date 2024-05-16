@@ -23,9 +23,9 @@ urlpatterns = [
     path('line_timer/<str:user_id>/', views.LINETimerView, name='LINETimerView'),
     path('api/endTime', views.get_end_time),
     path('api/currentTime', views.get_current_time),
-    #path('api/currentTime', CurrentTimeView.as_view()),
     path('api/reservation/<int:pk>/', views.get_reservation, name='get_reservation'),
-
+    path('coiney_webhook/', views.coiney_webhook, name='coiney_webhook'),
+    
     path('cancel_reservation/<int:schedule_id>/', CancelReservationView.as_view(), name='cancel_reservation'),
     path('upload/', views.upload_file, name='upload_file'),
     path('mypage/', views.MyPage.as_view(), name='my_page'),
