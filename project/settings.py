@@ -212,27 +212,15 @@ LOGIN_REDIRECT_URL = 'booking:store_list' # ログイン後にリダイレクト
 LOGOUT_REDIRECT_URL = 'booking:login' 
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+import os
 
-LINE_CHANNEL_ID = "2003969601"
-
-LINE_CHANNEL_SECRET = "0f65e88a404ba95833bca990cf312e40"
-
-LINE_REDIRECT_URL = 'https://timebaibai.com/booking/login/line/success/' # リダイレクトURL
-
-# # 決済サービスのAPIキー
-PAYMENT_API_KEY = 'sk_live_7ldzwc0xXXyVcarFazjHEEN7bTvXpa7x'
-
-# LINE Messaging APIのアクセストークン
-LINE_ACCESS_TOKEN = 'SwYJEbvMawMifRQ2yXIvhLLZJHwsBAOQzo4uGOrwIACTOybf3YbvJsWxVWN7KOtEcQJnpjQ6A4nYsc9+8is7ZYU2aIyrc2w1XESYFUOlWb17nScbom6jUxW/8UeejLpoFBPwErqH6JKes7SMSYd/PgdB04t89/1O/w1cDnyilFU='
-
-#ユーザーIDはログイン後に取得
-user_id = 'Udf02e8cec56a91be9005b6f10c6b7a56'
-
-CELERY_broker_url = 'redis://localhost:6379/0'
-accept_content = ['json']
-task_serializer = 'json'
-
-#決済サービス関連
-PAYMENT_API_URL = 'https://api.coiney.io/api/v1/payments'
-WEBHOOK_URL = "https://timebaibai.com/paying_success/"
-CANCEL_URL = "https://coiney.com/cancel/"
+LINE_CHANNEL_ID = os.getenv('LINE_CHANNEL_ID')
+LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
+LINE_REDIRECT_URL = os.getenv('LINE_REDIRECT_URL')
+PAYMENT_API_KEY = os.getenv('PAYMENT_API_KEY')
+LINE_ACCESS_TOKEN = os.getenv('LINE_ACCESS_TOKEN')
+user_id = os.getenv('user_id')
+CELERY_broker_url = os.getenv('CELERY_broker_url')
+PAYMENT_API_URL = os.getenv('PAYMENT_API_URL')
+WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+CANCEL_URL = os.getenv('CANCEL_URL')
