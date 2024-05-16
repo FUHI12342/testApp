@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
@@ -216,7 +215,6 @@ LOGIN_URL = 'booking:login'
 LOGIN_REDIRECT_URL = 'booking:store_list' # ログイン後にリダイレクトするURL
 LOGOUT_REDIRECT_URL = 'booking:login' 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
-import os
 
 LINE_CHANNEL_ID = os.getenv('LINE_CHANNEL_ID')
 LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
