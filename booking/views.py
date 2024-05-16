@@ -227,7 +227,7 @@ class LineCallbackView(View):
                         }
 
                         # Webhook URLを動的に設定
-                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_reservation_number)
+                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_reservation_number)+ '/'
 
                         data = {
                             "amount": price,  # 仮予約情報から取得した価格情報を設定
@@ -746,11 +746,10 @@ def coiney_webhook(request, reservation_number):
         ).hexdigest()
 
         # 受信した署名と計算した署名を比較
-        if not hmac.compare_digest(signature, expected_signature):
+        if signature is not None and expected_signature is not None:
+            if not hmac.compare_digest(signature, expected_signature):
+                return JsonResponse({'error': 'invalid signature'}, status=400)
+            else:
+                return PayingSuccessView.post(request, reservation_number)
+        else:
             return JsonResponse({'error': 'invalid signature'}, status=400)
-
-        # 署名が一致した場合、PayingSuccessViewのpostメソッドを呼び出す
-        # ここで予約番号を渡す
-        return PayingSuccessView.post(request, reservation_number)
-    else:
-        return JsonResponse({'error': 'invalid request'}, status=400)
