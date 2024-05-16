@@ -246,7 +246,7 @@ class LineCallbackView(View):
                         }
 
                         # Webhook URLを動的に設定
-                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_reservation_number)
+                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_reservation_number)+ '/'
 
                         data = {
                             "amount": price,  # 仮予約情報から取得した価格情報を設定
