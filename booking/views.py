@@ -240,7 +240,7 @@ class LineCallbackView(View):
                             "description": "ウェブサイトからの支払い",
                             "remarks": "仮予約から10分を過ぎますと自動的にキャンセルとなります。あらかじめご了承ください。",
                             "metadata": {
-                                "orderId":schedule_id 
+                                "orderId":schedule_reservation_number
                             },
                             "expiredOn": expired_on_str
                         }
@@ -291,11 +291,10 @@ import json
 
 
 class PayingSuccessView(View):
-    @classmethod
-    def post(cls, request):
+    def post(self, request, reservation_number):
         # 決済サービスからのレスポンスを解析
         payment_response = json.loads(request.body)
-        return process_payment(payment_response, request)
+        return process_payment(payment_response, request, reservation_number)
     
 class LineSuccessView(View):
     def get(self, request):
@@ -734,7 +733,7 @@ def process_payment(payment_response, request):
     return JsonResponse({'status': 'success'})
 
 @csrf_exempt
-def coiney_webhook(request):
+def coiney_webhook(request, reservation_number):
     if request.method == 'POST':
         # Coineyからの署名を取得
         signature = request.META.get('HTTP_X_COINEY_SIGNATURE')
@@ -751,6 +750,7 @@ def coiney_webhook(request):
             return JsonResponse({'error': 'invalid signature'}, status=400)
 
         # 署名が一致した場合、PayingSuccessViewのpostメソッドを呼び出す
-        return PayingSuccessView.post(request)
+        # ここで予約番号を渡す
+        return PayingSuccessView.post(request, reservation_number)
     else:
         return JsonResponse({'error': 'invalid request'}, status=400)
