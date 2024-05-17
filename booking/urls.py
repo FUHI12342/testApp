@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/endTime', views.get_end_time),
     path('api/currentTime', views.get_current_time),
     path('api/reservation/<int:pk>/', views.get_reservation, name='get_reservation'),
-    path('coiney_webhook/<str:reservation_number>/', views.coiney_webhook, name='coiney_webhook'),
+    path('coiney_webhook/<str:orderId>/', views.coiney_webhook, name='coiney_webhook'),
     
     path('cancel_reservation/<int:schedule_id>/', CancelReservationView.as_view(), name='cancel_reservation'),
     path('upload/', views.upload_file, name='upload_file'),
