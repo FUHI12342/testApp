@@ -294,6 +294,7 @@ class PayingSuccessView(View):
     def post(self, request, reservation_number):
         # 決済サービスからのレスポンスを解析
         payment_response = json.loads(request.body)
+        print('PayingSuccessView起動、決済サービスからのレスポンス解析中')
         return process_payment(payment_response, request, reservation_number)
     
 class LineSuccessView(View):
@@ -668,7 +669,7 @@ import hashlib
 from django.views.decorators.csrf import csrf_exempt
 
 def process_payment(payment_response, request):
-    print('payment_response' + str(payment_response))
+    print('process_paymentを起動、payment_responseは...' + str(payment_response))
     
     # 決済が成功したかどうかを確認
     if payment_response.get('type') == 'payment.succeeded':
@@ -697,7 +698,7 @@ def process_payment(payment_response, request):
         # schedule.startをローカルタイムゾーンに変換
         local_time = schedule.start.astimezone(local_tz)
         
-        print('スタッフのLINEアカウントID:' + str(staff_line_account_id))
+        print('スタッフのLINEアカウントIDはこれです' + str(staff_line_account_id))
         print(schedule.start)
         try:
             # 予約完了情報をメッセージとして送信
@@ -709,6 +710,7 @@ def process_payment(payment_response, request):
             
         except LineBotApiError as e:
             # エラーハンドリング
+            print('LineBotApiErrorエラーが発生しました713行目')
             print(e)
             
     # セッションからプロフィールを取得します。
@@ -726,9 +728,7 @@ def process_payment(payment_response, request):
     message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
     message = TextSendMessage(text=message_text)
     line_bot_api.push_message(user_id, message)
-    print('ユーザーに通知')
-    print(message_text)
-    
+    print('ユーザーに通知'+ message_text)    
     # レスポンスを直接作成して返す
     return JsonResponse({'status': 'success'})
 
@@ -739,24 +739,7 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def coiney_webhook(request, reservation_number):
     if request.method == 'POST':
-        # Coineyからの署名を取得
-        signature = request.META.get('HTTP_X_COINEY_SIGNATURE')
-
         # リクエストヘッダーをログに出力
         logger.info(request.META)
-
-        # リクエストボディとシークレットキーを使用して署名を計算
-        expected_signature = hmac.new(
-            bytes(settings.PAYMENT_API_KEY, 'utf-8'),
-            msg=request.body,
-            digestmod=hashlib.sha256
-        ).hexdigest()
-
-        # 受信した署名と計算した署名を比較
-        if signature is not None and expected_signature is not None:
-            if not hmac.compare_digest(signature, expected_signature):
-                return JsonResponse({'error': 'invalid signature'}, status=400)
-            else:
-                return PayingSuccessView.post(request, reservation_number)
-        else:
-            return JsonResponse({'error': 'invalid signature'}, status=400)
+        print('coiney_webhook起動')
+    return PayingSuccessView.post(request, reservation_number)
