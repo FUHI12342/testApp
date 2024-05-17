@@ -21,7 +21,7 @@ from django.views import generic, View
 from django.views.decorators.http import require_POST
 from booking.models import Store, Staff, Schedule, Customer, Timer
 import sys
-print('環境変数1' + str(sys.path))
+#print('環境変数1' + str(sys.path))
 
 User = get_user_model()
 class Index(generic.TemplateView):
@@ -34,7 +34,7 @@ class LineEnterView(View):
         state = secrets.token_hex(10)
         request.session['state'] = state
         
-        print('セッション' + str(request.session.items())) 
+        #print('セッション' + str(request.session.items())) 
         
         context = {
             'channel_id': LINE_CHANNEL_ID,
@@ -240,7 +240,7 @@ class LineCallbackView(View):
                             "description": "ウェブサイトからの支払い",
                             "remarks": "仮予約から10分を過ぎますと自動的にキャンセルとなります。あらかじめご了承ください。",
                             "metadata": {
-                                "orderId":schedule_reservation_number
+                                "":schedule_reservation_number
                             },
                             "expiredOn": expired_on_str
                         }
@@ -273,7 +273,7 @@ class LineCallbackView(View):
 
                     # ユーザープロファイル情報をセッションに保存
                     request.session['profile'] = user_profile
-                    print('セッション情報' + str(request.session.items()))
+                    #print('セッション情報' + str(request.session.items()))
                                     
                     return render(request, 'booking/line_success.html', {'profile': user_profile})      
                 else:
@@ -291,11 +291,11 @@ import json
 
 
 class PayingSuccessView(View):
-    def post(self, request, order_id):
+    def post(self, request, orderId):
         # 決済サービスからのレスポンスを解析
         payment_response = json.loads(request.body)
         print('PayingSuccessView起動、決済サービスからのレスポンス解析中')
-        return process_payment(payment_response, request, order_id)
+        return process_payment(payment_response, request, orderId)
     
 class LineSuccessView(View):
     def get(self, request):
@@ -666,13 +666,13 @@ def upload_file(request):
 
 from django.views.decorators.csrf import csrf_exempt
 
-def process_payment(payment_response, request, order_id):
+def process_payment(payment_response, request, orderId):
     print('process_paymentを起動、payment_responseは...' + str(payment_response))
     
     # 決済が成功したかどうかを確認
     if payment_response.get('type') == 'payment.succeeded':
         # 注文IDを取得
-        schedule = Schedule.objects.get(reservation_number=order_id)
+        schedule = Schedule.objects.get(reservation_number=orderId)
         print('スケジュール' + str(schedule))
         
         # 仮予約フラグをFalseに設定
@@ -734,19 +734,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
-def coiney_webhook(request):
+def coiney_webhook(request, orderId):
     if request.method == 'POST':
         # リクエストヘッダーをログに出力
         logger.info(request.META)
         print('coiney_webhook起動')
 
-        # リクエストボディからmetadataとorderIdを取得
-        body_unicode = request.body.decode('utf-8')
-        body_data = json.loads(body_unicode)
-        metadata = body_data.get('metadata', {})
-        order_id = metadata.get('orderId')
-
-        if order_id:
-            return PayingSuccessView.post(request, order_id)
+        if orderId:
+            return PayingSuccessView.post(request,orderId)
         else:
             return JsonResponse({"error": "orderId not found in request body"}, status=400)
