@@ -291,11 +291,11 @@ import json
 
 
 class PayingSuccessView(View):
-    def post(self, request, reservation_number):
+    def post(self, request, order_id):
         # 決済サービスからのレスポンスを解析
         payment_response = json.loads(request.body)
         print('PayingSuccessView起動、決済サービスからのレスポンス解析中')
-        return process_payment(payment_response, request, reservation_number)
+        return process_payment(payment_response, request, order_id)
     
 class LineSuccessView(View):
     def get(self, request):
@@ -664,18 +664,15 @@ def upload_file(request):
         print('フォームの中身２' + str(form))
     return render(request, 'upload.html', {'form': form})
 
-import hmac
-import hashlib
 from django.views.decorators.csrf import csrf_exempt
 
-def process_payment(payment_response, request):
+def process_payment(payment_response, request, order_id):
     print('process_paymentを起動、payment_responseは...' + str(payment_response))
     
     # 決済が成功したかどうかを確認
     if payment_response.get('type') == 'payment.succeeded':
         # 注文IDを取得
-        order_id = payment_response.get('orderId')
-        schedule = Schedule.objects.get(order_id=order_id)
+        schedule = Schedule.objects.get(reservation_number=order_id)
         print('スケジュール' + str(schedule))
         
         # 仮予約フラグをFalseに設定
@@ -737,9 +734,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
-def coiney_webhook(request, reservation_number):
+def coiney_webhook(request):
     if request.method == 'POST':
         # リクエストヘッダーをログに出力
         logger.info(request.META)
         print('coiney_webhook起動')
-    return PayingSuccessView.post(request, reservation_number)
+
+        # リクエストボディからmetadataとorderIdを取得
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        metadata = body_data.get('metadata', {})
+        order_id = metadata.get('orderId')
+
+        if order_id:
+            return PayingSuccessView.post(request, order_id)
+        else:
+            return JsonResponse({"error": "orderId not found in request body"}, status=400)
