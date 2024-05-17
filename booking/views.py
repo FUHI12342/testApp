@@ -758,11 +758,18 @@ def process_payment(payment_response, request):
     # レスポンスを直接作成して返す
     return JsonResponse({'status': 'success'})
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def coiney_webhook(request, reservation_number):
     if request.method == 'POST':
         # Coineyからの署名を取得
         signature = request.META.get('HTTP_X_COINEY_SIGNATURE')
+
+        # リクエストヘッダーをログに出力
+        logger.info(request.META)
 
         # リクエストボディとシークレットキーを使用して署名を計算
         expected_signature = hmac.new(
