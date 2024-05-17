@@ -757,6 +757,7 @@ def coiney_webhook(request, orderId):
         print('coiney_webhook起動')
 
         if orderId:
-            return PayingSuccessView.post(request,orderId)
+            view = PayingSuccessView()
+            return view.post(request,orderId)
         else:
             return JsonResponse({"error": "orderId not found in request body"}, status=400)
