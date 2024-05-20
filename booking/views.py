@@ -8,6 +8,7 @@ import secrets
 from datetime import timedelta
 from django.utils import timezone
 from .models import Schedule
+from celery import shared_task
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, authenticate
@@ -648,7 +649,6 @@ def my_page_day_delete(request, pk, year, month, day):
 
     raise PermissionDenied
 
-#print('ビューのタスク.py')
 @shared_task
 def delete_temporary_schedules():
     now = timezone.now()
