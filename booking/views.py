@@ -687,6 +687,10 @@ def process_payment(payment_response, request, orderId):
 
         # スタッフのLINEアカウントIDを取得
         staff_line_account_id = schedule.staff.line_id
+        if not staff_line_account_id:
+            print('スタッフのLINEアカウントIDが取得できませんでした')
+            return JsonResponse({"error": "Staff LINE account ID not found"}, status=400)
+
         import pytz
 
         # ローカルタイムゾーンを取得
@@ -705,11 +709,19 @@ def process_payment(payment_response, request, orderId):
             print('スタッフに通知')
             print(message_text)
                         
-            # セッションからプロフィールを取得します。
-            user_id = request.session.get('user_id')
-            if user_id is None:
-                print('user_id is None')
-                return JsonResponse({"error": "user_id not found"}, status=400)
+            import logging
+
+            logger = logging.getLogger(__name__)
+
+            # 確認済みのセッションから顧客のLINE IDを取得します。
+            try:
+                user_id = request.session.get('user_id')
+                if user_id is None:
+                    logger.error('user_id is None')
+                    return JsonResponse({"error": "user_id not found"}, status=400)
+            except Exception as e:
+                logger.error('Error getting user_id from session: %s', e)
+                return JsonResponse({"error": "Error getting user_id"}, status=500)
             
             # タイマーURLを生成
             timer_url = reverse('booking:LINETimerView', args=[user_id])
