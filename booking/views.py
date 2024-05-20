@@ -240,7 +240,7 @@ class LineCallbackView(View):
                             "description": "ウェブサイトからの支払い",
                             "remarks": "仮予約から10分を過ぎますと自動的にキャンセルとなります。あらかじめご了承ください。",
                             "metadata": {
-                                "":schedule_reservation_number
+                                "orderId":schedule_reservation_number
                             },
                             "expiredOn": expired_on_str
                         }
@@ -474,12 +474,12 @@ class PreBooking(generic.CreateView):
 
             schedule.save()
             print('仮予約完了')
-            
+            print(customer.name, customer.line_user_id, schedule.start, schedule.end, schedule.price)
             
            # 仮予約情報をセッションに保存
             self.request.session['temporary_booking'] = {
                 'reservation_number': str(schedule.reservation_number),
-                'customer_id': customer.id,
+                'user_profile': customer.line_user_id,
                 'start': start.isoformat(),
                 'end': end.isoformat(),
                 'price': price,
@@ -580,7 +580,7 @@ class MyPageScheduleDelete(OnlyScheduleMixin, generic.DeleteView):
     model = Schedule
     success_url = reverse_lazy('booking:my_page')
 
-print('環境変数2' + str(sys.path))
+#print('環境変数2' + str(sys.path))
 from django.shortcuts import render
 from .forms import YourForm
 
@@ -709,10 +709,15 @@ def process_payment(payment_response, request, orderId):
             # エラーハンドリング
             print('LineBotApiErrorエラーが発生しました713行目')
             print(e)
+            return JsonResponse({"error": "LineBotApiError occurred"}, status=500)
             
     # セッションからプロフィールを取得します。
-    profile = request.session.get('profile')
-    user_id = profile['sub']  # 'sub'はLINEのユーザーIDを表す
+    user_profile = request.session.get('user_profile')
+    if user_profile is None:
+        logger.error('Profile is None')
+        return JsonResponse({"error": "Profile not found"}, status=400)
+    
+    user_id = user_profile['sub']  # 'sub'はLINEのユーザーIDを表す
 
     # LINE Messaging APIの初期化
     line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
