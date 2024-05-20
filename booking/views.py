@@ -479,7 +479,7 @@ class PreBooking(generic.CreateView):
            # 仮予約情報をセッションに保存
             self.request.session['temporary_booking'] = {
                 'reservation_number': str(schedule.reservation_number),
-                'user_profile': customer.line_user_id,
+                'user_id': customer.line_user_id,
                 'start': start.isoformat(),
                 'end': end.isoformat(),
                 'price': price,
@@ -634,7 +634,7 @@ def my_page_day_delete(request, pk, year, month, day):
 
     raise PermissionDenied
 
-print('ビューのタスク.py')
+#print('ビューのタスク.py')
 @shared_task
 def delete_temporary_schedules():
     print('delete_temporary_schedules')
@@ -682,7 +682,7 @@ def process_payment(payment_response, request, orderId):
         schedule.save()
         print('本予約情報として保存')
         
-         # LINE Messaging APIの初期化
+        # LINE Messaging APIの初期化
         line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
 
         # スタッフのLINEアカウントIDを取得
@@ -704,35 +704,30 @@ def process_payment(payment_response, request, orderId):
             line_bot_api.push_message(staff_line_account_id, message)  # スタッフに通知
             print('スタッフに通知')
             print(message_text)
+                        
+            # セッションからプロフィールを取得します。
+            user_id = request.session.get('user_id')
+            if user_id is None:
+                print('user_id is None')
+                return JsonResponse({"error": "user_id not found"}, status=400)
             
+            # タイマーURLを生成
+            timer_url = reverse('booking:LINETimerView', args=[user_id])
+            encoded_timer_url = quote(timer_url)
+
+            # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
+            message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
+            message = TextSendMessage(text=message_text)
+            line_bot_api.push_message(user_id, message)
+            print('ユーザーに通知'+ message_text)  
+        
         except LineBotApiError as e:
             # エラーハンドリング
-            print('LineBotApiErrorエラーが発生しました713行目')
+            print('LineBotApiErrorエラーが発生しました')
             print(e)
             return JsonResponse({"error": "LineBotApiError occurred"}, status=500)
-            
-    # セッションからプロフィールを取得します。
-    user_profile = request.session.get('user_profile')
-    if user_profile is None:
-        logger.error('Profile is None')
-        return JsonResponse({"error": "Profile not found"}, status=400)
-    
-    user_id = user_profile['sub']  # 'sub'はLINEのユーザーIDを表す
-
-    # LINE Messaging APIの初期化
-    line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
-    
-    # タイマーURLを生成
-    timer_url = reverse('booking:LINETimerView', args=[user_id])
-    encoded_timer_url = quote(timer_url)
-
-    # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
-    message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
-    message = TextSendMessage(text=message_text)
-    line_bot_api.push_message(user_id, message)
-    print('ユーザーに通知'+ message_text)    
-    # レスポンスを直接作成して返す
-    return JsonResponse({'status': 'success'})
+        
+    return JsonResponse({"status": "success"})
 
 import logging
 
