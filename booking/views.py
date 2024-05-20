@@ -174,8 +174,7 @@ class LineCallbackView(View):
 
                     # LINEユーザーIDを取得
                     line_user_id = user_profile['sub']
-                    
-                    from .models import Customer
+                    print('LINEユーザーID: ' + line_user_id)
 
                     try:
                         customer = Customer.objects.get(line_user_id=line_user_id)
@@ -272,6 +271,7 @@ class LineCallbackView(View):
                         if payment_url is not None:
                             message = TextSendMessage(text='こちらのURLから決済を行ってください。決済後に予約が確定します。: ' + payment_url)
                             line_bot_api.push_message(user_id, message)
+                            print('LINEアカウントID'+user_id)
                             print("Message sent successfully")
                         else:
                             print("Payment URL is not available") 
@@ -675,6 +675,9 @@ def upload_file(request):
     return render(request, 'upload.html', {'form': form})
 
 from django.views.decorators.csrf import csrf_exempt
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
+from linebot.exceptions import LineBotApiError
 
 def process_payment(payment_response, request, orderId):
     print('process_paymentを起動、payment_responseは...' + str(payment_response))
@@ -694,7 +697,8 @@ def process_payment(payment_response, request, orderId):
         
         # LINE Messaging APIの初期化
         line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
-
+        print('LINE Messaging APIの初期化を行いました')
+        
         # スタッフのLINEアカウントIDを取得
         staff_line_account_id = schedule.staff.line_id
         if not staff_line_account_id:
@@ -711,43 +715,47 @@ def process_payment(payment_response, request, orderId):
         
         print('スタッフのLINEアカウントIDはこれです' + str(staff_line_account_id))
         print(schedule.start)
+        # 予約完了情報をメッセージとして送信
+        message_text = '予約が完了しました。予約者: {}, 日時: {}'.format(schedule.customer.name, local_time)
+        message = TextSendMessage(text=message_text)
+     
         try:
-            # 予約完了情報をメッセージとして送信
-            message_text = '予約が完了しました。予約者: {}, 日時: {}'.format(schedule.customer.name, local_time)
-            message = TextSendMessage(text=message_text)
-            line_bot_api.push_message(staff_line_account_id, message)  # スタッフに通知
-            print('スタッフに通知')
+            line_bot_api.push_message(staff_line_account_id, message)  # LINEアカウントに通知
+            print('スタッフのLINEアカウントに通知')
             print(message_text)
+        except LineBotApiError as e:
+            print('スタッフメッセージにてLineBotApiErrorが発生しました:', e)            
                         
             import logging
 
             logger = logging.getLogger(__name__)
 
-            # 確認済みのセッションから顧客のLINE IDを取得します。
-            try:
-                user_id = request.session.get('user_id')
-                if user_id is None:
-                    logger.error('user_id is None')
-                    return JsonResponse({"error": "user_id not found"}, status=400)
-            except Exception as e:
-                logger.error('Error getting user_id from session: %s', e)
-                return JsonResponse({"error": "Error getting user_id"}, status=500)
+        # 確認済みのセッションから顧客のLINE IDを取得します。
+        try:
+            user_id = request.session.get('user_id')
+            print('顧客のLINEアカウントIDはこれです' + str(user_id))
+            if user_id is None:
+                logger.error('user_id is None')
+                return JsonResponse({"error": "user_id not found"}, status=400)
+        except Exception as e:
+            logger.error('Error getting user_id from session: %s', e)
+            return JsonResponse({"error": "Error getting user_id"}, status=500)
             
-            # タイマーURLを生成
-            timer_url = reverse('booking:LINETimerView', args=[user_id])
-            encoded_timer_url = quote(timer_url)
-
-            # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
-            message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
-            message = TextSendMessage(text=message_text)
-            line_bot_api.push_message(user_id, message)
-            print('ユーザーに通知'+ message_text)  
+        # タイマーURLを生成
+        timer_url = reverse('booking:LINETimerView', args=[user_id])
+        encoded_timer_url = quote(timer_url)
+        message = None  # 初期化
         
+        # 決済完了の通知とタイマーURLをメッセージとして送信（予約キャンセルもこの先）
+        message_text = '決済が完了しました。こちらのURLから予約情報・タイマーを確認できます: ' + '<' + 'https://timebaibai.com/' + encoded_timer_url + '>'
+        
+        message = TextSendMessage(text=message_text)
+        try:  
+            line_bot_api.push_message(user_id, message)  # LINEアカウントに通知
+            print('顧客のLINEアカウントに通知')
+            print(message_text)
         except LineBotApiError as e:
-            # エラーハンドリング
-            print('LineBotApiErrorエラーが発生しました')
-            print(e)
-            return JsonResponse({"error": "LineBotApiError occurred"}, status=500)
+            print('顧客向け決済完了メッセージにてLineBotApiErrorが発生しました:', e)
         
     return JsonResponse({"status": "success"})
 
