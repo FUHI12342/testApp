@@ -190,8 +190,9 @@ class LineCallbackView(View):
 
                     #ユーザーIDとメッセージ
                     #ユーザーIDはログイン後に取得
-                    user_id = user_profile['sub']  #'sub'はLINEのユーザーIDを表す
-                   
+                    user_id = user_profile['sub']
+                    request.session['user_id'] = user_id  # セッションにuser_idを保存
+
                     try:
                         # ユーザープロファイルの取得
                         profile = line_bot_api.get_profile(user_id)
@@ -263,7 +264,7 @@ class LineCallbackView(View):
                         if payment_url is not None:
                             message = TextSendMessage(text='こちらのURLから決済を行ってください。決済後に予約が確定します。: ' + payment_url)
                             line_bot_api.push_message(user_id, message)
-                            print('LINEアカウントID'+user_id)
+                            print('LINEアカウントID'+ user_id)
                             print("Message sent successfully")
                         else:
                             print("Payment URL is not available") 
@@ -435,7 +436,6 @@ class PreBooking(generic.CreateView):
         return super().form_invalid(form)
     
     def form_valid(self, form):
-        print('フォームバリッド')
         print('form.is_valid()の結果:', form.is_valid())        
         print('form.errorsの結果:', form.errors)
         staff = get_object_or_404(Staff, pk=self.kwargs['pk'])
@@ -478,10 +478,11 @@ class PreBooking(generic.CreateView):
             print('仮予約完了')
             print(customer.name, customer.line_user_id, schedule.start, schedule.end, schedule.price)
             
-           # 仮予約情報をセッションに保存
+            user_id = self.request.session.get('user_id')  # セッションからuser_idを取得
+            # 仮予約情報をセッションに保存
             self.request.session['temporary_booking'] = {
                 'reservation_number': str(schedule.reservation_number),
-                'user_id': customer.line_user_id,
+                'user_id': user_id,  # セッションから取得したuser_idを使用
                 'start': start.isoformat(),
                 'end': end.isoformat(),
                 'price': price,
