@@ -19,10 +19,17 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 from django.views.decorators.http import require_POST
-from booking.models import Store, Staff, Schedule, Customer, Timer
+from booking.models import Store, Staff, Schedule, Customer, Timer,UserSerializer
 import sys
-#print('環境変数1' + str(sys.path))
+from rest_framework import generics
+from django.contrib.auth.models import User
 
+print('環境変数1' + str(sys.path))
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    
 User = get_user_model()
 class Index(generic.TemplateView):
     template_name = 'booking/index.html'
@@ -711,7 +718,8 @@ def process_payment(payment_response, request, orderId):
         # 予約完了情報をメッセージとして送信
         message_text = '予約が完了しました。予約者: {}, 日時: {}'.format(schedule.customer.name, local_time)
         message = TextSendMessage(text=message_text)
-     
+        import logging
+        logger = logging.getLogger(__name__)
         try:
             line_bot_api.push_message(staff_line_account_id, message)  # LINEアカウントに通知
             print('スタッフのLINEアカウントに通知')
@@ -719,13 +727,9 @@ def process_payment(payment_response, request, orderId):
         except LineBotApiError as e:
             print('スタッフメッセージにてLineBotApiErrorが発生しました:', e)            
                         
-            import logging
-
-            logger = logging.getLogger(__name__)
-
         # 確認済みのセッションから顧客のLINE IDを取得します。
         try:
-            user_id = request.session.get('user_id')
+            user_id = request.session.get('temporary_booking').get('user_id')
             print('顧客のLINEアカウントIDはこれです' + str(user_id))
             if user_id is None:
                 logger.error('user_id is None')

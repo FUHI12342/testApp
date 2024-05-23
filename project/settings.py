@@ -29,22 +29,22 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-# #ローカル環境
-# DEBUG = True
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+#ローカル環境
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
 ]
 
-# 本番環境設定
-DEBUG = os.getenv('DEBUG') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
-STATIC_ROOT = os.getenv('STATIC_ROOT')
-MEDIA_ROOT = os.getenv('MEDIA_ROOT')
+# # 本番環境設定
+# DEBUG = os.getenv('DEBUG') == 'True'
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+# STATIC_ROOT = os.getenv('STATIC_ROOT')
+# MEDIA_ROOT = os.getenv('MEDIA_ROOT')
 
 
 

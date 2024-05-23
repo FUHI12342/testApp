@@ -572,7 +572,23 @@ class PayingSuccessViewTest(TestCase):
 
         # レスポンスの内容を確認
         self.assertEqual(response.content.decode(), 'Payment successful and message sent.')
+import requests
 
+# WebhookのURL（ローカルサーバーの場合）
+webhook_url = 'http://localhost:8000/path/to/webhook/'
+
+# 決済サービスからのレスポンスを模擬
+data = {
+    'status': 'paid',
+    'orderId': '12345',
+    # その他の必要なデータ...
+}
+
+# POSTリクエストを送信
+response = requests.post(webhook_url, data=data)
+
+# レスポンスを表示
+print(response.text)
 # from django.core.files.uploadedfile import SimpleUploadedFile
 # from django.test import TestCase, Client
 # from .models import Staff
