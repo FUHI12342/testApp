@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from rest_framework import serializers
+from django.contrib.auth.models import User
 
 class Timer(models.Model):
     user_id = models.CharField(max_length=255, unique=True)
@@ -65,3 +67,8 @@ class Schedule(models.Model):
         start = timezone.localtime(self.start).strftime('%Y/%m/%d %H:%M:%S')
         end = timezone.localtime(self.end).strftime('%Y/%m/%d %H:%M:%S')
         return f'{self.reservation_number} {start} ~ {end} {self.staff}'
+    
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']

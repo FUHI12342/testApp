@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path, include
 from . import views
-from .views import LineEnterView, LineCallbackView,CancelReservationView
+from .views import LineEnterView, LineCallbackView,CancelReservationView,UserList
 from django.urls import path
 
 
@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/currentTime', views.get_current_time),
     path('api/reservation/<int:pk>/', views.get_reservation, name='get_reservation'),
     path('coiney_webhook/<str:orderId>/', views.coiney_webhook, name='coiney_webhook'),
+    path('users/', UserList.as_view()),
     
     path('cancel_reservation/<int:schedule_id>/', CancelReservationView.as_view(), name='cancel_reservation'),
     path('upload/', views.upload_file, name='upload_file'),
