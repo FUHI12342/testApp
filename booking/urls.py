@@ -2,8 +2,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path, include
 from . import views
 from .views import LineEnterView, LineCallbackView,CancelReservationView,UserList
-from django.urls import path
-
+from .admin import custom_site
 
 app_name = 'booking'
 
@@ -27,6 +26,7 @@ urlpatterns = [
     path('coiney_webhook/<str:orderId>/', views.coiney_webhook, name='coiney_webhook'),
     path('users/', UserList.as_view()),
     
+    path('custom_admin/', custom_site.urls),
     path('cancel_reservation/<int:schedule_id>/', CancelReservationView.as_view(), name='cancel_reservation'),
     path('upload/', views.upload_file, name='upload_file'),
     path('mypage/', views.MyPage.as_view(), name='my_page'),

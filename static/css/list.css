@@ -101,7 +101,7 @@
 }
 /*ブロック内の見出し(h4)にリンクを貼った場合の設定*/
 .list h4 a {
-	color: #a17ccc;		/*文字色*/
+	color: #8c876c;		/*文字色*/
 }
 /*ボックス内のサイト名*/
 .list p.name {
@@ -221,7 +221,7 @@
 /*件数のテキスト。※list2内でspanタグで囲った場合。*/
 .list2 span {
 	font-size: 28px;	/*文字サイズ*/
-	color: #a17ccc;		/*文字色*/
+	color: #8c876c;		/*文字色*/
 }
 
 /*sub,sideコンテンツ内のlist-subボックス

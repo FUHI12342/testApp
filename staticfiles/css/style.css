@@ -75,6 +75,7 @@ table {border-collapse:collapse;font-size: 100%;border-spacing: 0;}
 iframe {width: 100%;}
 video,audio {max-width: 100%;}
 
+
 /*リンク（全般）設定
 ---------------------------------------------------------------------------*/
 a {
@@ -82,7 +83,7 @@ a {
 	transition: 0.5s;	/*マウスオン時の移り変わるまでの時間設定。0.5秒。*/
 }
 a:hover {
-	color: #a17ccc;			/*マウスオン時の文字色*/
+	color: #8c876c;			/*マウスオン時の文字色*/
 	text-decoration: none;	/*マウスオン時に下線を消す設定。残したいならこの１行削除。*/
 }
 /*マウスオン時の画像*/
@@ -143,7 +144,7 @@ header .login a:hover {
 	clear: both;
 	height: 75px;		/*メニューの高さ。下の「#menubar ul li a」の「height」と「padding-top」の数字を合計した数字に合わせる。*/
 	text-align: center;	/*文字を中央に*/
-	background: #a17ccc;	/*背景色*/
+	background: #8c876c;	/*背景色*/
 	border-bottom: 1px solid #fff;	/*下線の幅、線種、色*/
 }
 /*メニュー１個あたりの設定*/
@@ -175,7 +176,7 @@ header .login a:hover {
 }
 /*マウスオン時と、現在表示中(current)のメニューの設定*/
 #menubar li a:hover, #menubar li.current a {
-	background: #bfa3e0;	/*背景色*/
+	background: #e0b4a3;	/*背景色*/
 }
 /*スマホ用メニューを表示させない*/
 #menubar-s {display: none;}
@@ -206,7 +207,7 @@ header .login a:hover {
 }
 /*ドロップダウンメニュー内の見出し*/
 #menubar ul.ddmenu li.title a {
-	background: #a17ccc;	/*背景色*/
+	background: #8c876c;	/*背景色*/
 	cursor: default;		/*カーソルをリンク用でなくデフォルトの矢印にしておく*/
 	padding: 3px 0;			/*上下、左右への余白*/
 }
@@ -216,7 +217,7 @@ header .login a:hover {
 }
 /*見出しのマウスオン時*/
 #menubar ul.ddmenu li.title a:hover {
-	background: #a17ccc;
+	background: #8c876c;
 }
 
 /*fixmenu設定（メニューが画面上部に到達した際のスタイル）
@@ -269,7 +270,7 @@ body.is-fixed header {
 	padding: 10px 20px;	/*上下、左右への余白*/
 	font-size: 18px;	/*文字サイズ*/
 	color: #fff;		/*文字色*/
-	background: #a17ccc;	/*背景色*/
+	background: #8c876c;	/*背景色*/
 }
 /*h2タグの１文字目への追加設定*/
 #main h2::first-letter {
@@ -286,7 +287,7 @@ body.is-fixed header {
 }
 /*h3タグの１文字目への追加設定*/
 #main h3::first-letter {
-	border-left: 3px solid #a17ccc;	/*左の線の幅、線種、色*/
+	border-left: 3px solid #8c876c;	/*左の線の幅、線種、色*/
 	padding-left: 15px;				/*線とテキストとの余白*/
 }
 /*mainコンテンツの段落タグ設定*/
@@ -376,7 +377,7 @@ body.is-fixed header {
 ---------------------------------------------------------------------------*/
 footer {
 	clear: both;
-	background: #a17ccc;	/*背景色*/
+	background: #8c876c;	/*背景色*/
 	font-size: 85%;			/*文字サイズ*/
 	color: #fff;			/*文字色*/
 }
@@ -457,7 +458,7 @@ footer .pr {display: block;font-size: 80%;}
 /*質問*/
 .faq dt {
 	font-weight: bold;	/*太字にする設定*/
-	color: #a17ccc;		/*文字色*/
+	color: #8c876c;		/*文字色*/
 }
 /*回答*/
 .faq dd {
@@ -611,12 +612,6 @@ body.is-fixed-pagetop .nav-fix-pos-pagetop a:hover {
 	vertical-align: text-top;
 }
 
-.img-staff-thumbnail {
-    width: 15px;  /* または任意の値 */
-    height: 15px; /* または任意の値 */
-    object-fit: cover; /* 画像のアスペクト比を保持しつつ、指定した幅と高さに収まるように調整 */
-}
-
 /*UPアイコン
 ---------------------------------------------------------------------------*/
 .upicon {
@@ -659,7 +654,7 @@ ol {
 .mb10 {margin-bottom: 10px !important;}
 .mb30 {margin-bottom: 30px !important;}
 .clear {clear: both;}
-.color1, .color1 a {color: #a17ccc !important;}
+.color1, .color1 a {color: #8c876c !important;}
 .color2, .color2 a {color: #999 !important;}
 .red, .red a {color: #ff0000 !important;}
 .pr {font-size: 10px;}
@@ -753,7 +748,7 @@ body.is-fixed-menu header,body.is-fixed header {margin-bottom: 0px;}
 	display: block;text-decoration: none;
 	padding: 15px 10px 15px 20px;	/*上、右、下、左へのメニュー内の余白*/
 	border-bottom: 1px solid #fff;	/*下の線の幅、線種、色*/
-	background: #a17ccc;	/*背景色*/
+	background: #8c876c;	/*背景色*/
 	font-size: 20px;		/*文字サイズ*/
 	color: #fff;		/*文字色*/
 }
@@ -783,11 +778,11 @@ body.is-fixed-menu header,body.is-fixed header {margin-bottom: 0px;}
 }
 /*三本バーアイコン*/
 #menubar_hdr.close {
-	background: #a17ccc url(../images/icon_menu.png) no-repeat center top/50px;	/*背景色、アイコンの読み込み、上半分(top)を表示、幅50px*/
+	background: #8c876c url(../images/icon_menu.png) no-repeat center top/50px;	/*背景色、アイコンの読み込み、上半分(top)を表示、幅50px*/
 }
 /*閉じるアイコン*/
 #menubar_hdr.open {
-	background: #a17ccc url(../images/icon_menu.png) no-repeat center bottom/50px;	/*背景色、アイコンの読み込み、上半分(bottom)を表示、幅50px*/
+	background: #8c876c url(../images/icon_menu.png) no-repeat center bottom/50px;	/*背景色、アイコンの読み込み、上半分(bottom)を表示、幅50px*/
 }
 
 /*contents（３カラムを囲むブロック）
@@ -882,6 +877,15 @@ body {
 #sub .submenu li a,
 #side .submenu li a {
 	padding: 10px;	/*ボックス内の余白*/
+}
+
+.submenu h4 {
+	font-size: calc(1em + 2px);  /* 更新日のテキストより＋2px */
+	line-height: 1;  /* 行間を開けない */
+}
+
+section p {
+	font-size: 1em;  /* 更新日のテキストのフォントサイズ */
 }
 
 /*フッターメニュー

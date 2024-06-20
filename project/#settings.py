@@ -51,7 +51,7 @@ MEDIA_ROOT = os.getenv('MEDIA_ROOT')
 # Application definition
 
 INSTALLED_APPS = [
-    'social_django',
+    #'social_django',
     'booking.apps.BookingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
