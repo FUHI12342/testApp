@@ -12,7 +12,46 @@
 /*トップページのメイン画像用css*/
 @import url(mainimg.css);
 
+/* カルーセルの外枠 */
+.carousel {
+    width: 1600px;
+    height: 600px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+}
 
+.carousel img {
+    width: 1600px;
+    height: 600px;
+    position: absolute;
+    animation: slide 12s infinite;
+    animation-timing-function: steps(1, end);
+}
+
+.carousel img:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.carousel img:nth-child(2) {
+    animation-delay: 4s;
+}
+
+.carousel img:nth-child(3) {
+    animation-delay: 8s;
+}
+
+@keyframes slide {
+    0%, 33% {
+        transform: translateX(0);
+    }
+    34%, 66% {
+        transform: translateX(-100%);
+    }
+    67%, 100% {
+        transform: translateX(-200%);
+    }
+}
 
 /*全端末（PC・タブレット・スマホ）共通設定
 ------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -81,9 +120,9 @@ header .login a {
 	float: right;		/*右に回り込み*/
 	margin-right: 3%;	/*右に空けるスペース*/
 	margin-top: 30px;	/*上に空けるスペース。ヘッダー内の上下の配置バランスをここで調整して下さい。*/
-	border: 1px solid #fe7200;	/*枠線の幅、線種、色*/
-	background: #fe7200;/*背景色（古いブラウザ用）*/
-	background: #fe7200 url(../images/icon_login.png) no-repeat 20px 11px / 12px;/*背景色、アイコンの読み込み。左から25px、上から11pxの場所に配置。画像幅は12px。*/
+	border: 1px solid #1fe800;	/*枠線の幅、線種、色*/
+	background: #1fe800;/*背景色（古いブラウザ用）*/
+	background: #1fe800 url(../images/icon_login.png) no-repeat 20px 11px / 12px;/*背景色、アイコンの読み込み。左から25px、上から11pxの場所に配置。画像幅は12px。*/
 	color: #fff;	/*文字色*/
 	padding: 5px 30px 5px 50px;	/*上、右、下、左へのボタン内の余白*/
 	border-radius: 4px;		/*角丸のサイズ*/
@@ -93,7 +132,7 @@ header .login a {
 }
 /*マウスオン時*/
 header .login a:hover {
-	background-color: #fe9b00;	/*背景色だけ変更する*/
+	background-color: #25cf0a;	/*背景色だけ変更する*/
 	color: #fff;	/*も地色*/
 }
 
@@ -220,7 +259,7 @@ body.is-fixed header {
 /*mainコンテンツ（中央のブロック）
 ---------------------------------------------------------------------------*/
 #main {
-	float: right;	/*右に回り込み*/
+		/*float: right;右に回り込み*/
 	width: 75%;		/*ブロックの幅*/
 }
 /*mainコンテンツのh2タグ設定*/
@@ -252,7 +291,7 @@ body.is-fixed header {
 }
 /*mainコンテンツの段落タグ設定*/
 #main p {
-	padding: 0px 20px 20px;	/*上、左右、下への余白*/
+	padding: 0px 0px 0px;	/*上、左右、下への余白*/
 }
 /*他。微調整。*/
 #main p + p {
@@ -572,6 +611,12 @@ body.is-fixed-pagetop .nav-fix-pos-pagetop a:hover {
 	vertical-align: text-top;
 }
 
+.img-staff-thumbnail {
+    width: 15px;  /* または任意の値 */
+    height: 15px; /* または任意の値 */
+    object-fit: cover; /* 画像のアスペクト比を保持しつつ、指定した幅と高さに収まるように調整 */
+}
+
 /*UPアイコン
 ---------------------------------------------------------------------------*/
 .upicon {
@@ -828,7 +873,7 @@ body {
 }
 /*段落タグ設定*/
 #main p {
-	padding: 0px 10px 10px;
+	padding: 0px 0px 0px;
 }
 
 /*submenu（sub,sideのメニュー）
@@ -915,4 +960,75 @@ ol {
 .big1 {font-size: 18px;letter-spacing: normal;}
 img.fr,img.fl {float: none;margin: 0;width: 100%;}
 
+}
+
+/*トップページのメイン画像
+---------------------------------------------------------------------------*/
+#mainimg {
+    width: 100%;
+}
+
+#mainimg-inner {
+	height: 100vh;				/*高さ。ウィンドウの高さ一杯に表示させる指定。*/
+	display: flex;				/*flexボックスを使う指定*/
+	flex-direction: column;		/*子要素を縦並びにする。２つのボタンが縦並びになります。*/
+	justify-content: center;	/*並びかたの種類の指定*/
+	align-items: center;		/*垂直揃えの指定。上下中央に配置されるように。*/
+}
+
+/*「求人を探す」「求人を出す」の共通設定*/
+#mainimg-inner div {
+	position: relative;z-index: 1;
+	width: 60%;				/*ボタンの幅*/
+	text-align: center;		/*文字をセンタリング*/
+	border-radius: 10px;	/*角を丸くする指定*/
+	line-height: 1.5;		/*行間。デフォルトより少し狭くする。*/
+	letter-spacing: 0.4em;	/*文字間隔を少し広くとる*/
+	transition: 0.3s;		/*マウスオンの際にボタンが大きくなるまでの時間。0.3秒。*/
+	box-shadow: 10px 20px 40px rgba(0,0,0,0.4);	/*ボックスの影。右へ、下へ、ぼかし幅の順。0,0,0は黒の事で0.4は色が40%出た状態。*/
+	text-shadow: 2px 2px 2px rgba(0,0,0,0.2);	/*テキストの影。右へ、下へ、ぼかし幅の順。0,0,0は黒の事で0.2は色が20%出た状態。*/
+}
+
+#mainimg-inner div a {
+	display: block;text-decoration: none;
+	padding: 10px 20px;	/*上下、左右へのボタン内の余白*/
+	color: #fff;		/*文字色*/
+}
+
+/*ボタン同士に空けるスペース*/
+#mainimg-inner div + div {
+	margin-top: 20px;
+}
+
+/*「求人を探す」「求人を出す」のマウスオン時*/
+#mainimg-inner div:hover {
+	transform: scale(1.05);		/*105%に拡大する*/
+	filter: brightness(1.2);	/*少しだけ明るくする*/
+}
+
+/*「求人を探す」の設定。(1)は１つ目のボタンという意味です。*/
+#mainimg-inner div:nth-of-type(1) {
+	background: linear-gradient(#8221b5,#681a90);/*背景グラデーション*/
+}
+
+/*「求人を出す」の設定。(2)は２つ目のボタンという意味です。*/
+#mainimg-inner div:nth-of-type(2) {
+	background: linear-gradient(#ffa800,#ff8400);/*背景グラデーション*/
+}
+
+/*spanタグ。大きな文字の指定です。*/
+#mainimg-inner span {
+	font-size: 1.5rem;	/*文字サイズ。remの単位についてはテンプレート内の解説をお読み下さい。*/
+}
+
+/*アイコン画像（アイコンにはFont Awesomeを使用）*/
+#mainimg-inner i {
+	opacity: 0.7;			/*透明度。0.7は色が70%出た状態。*/
+	margin-left: 10px;		/*小さな文字とアイコン画像の間に空けるスペース*/
+}
+/*スクロールを促すアイコン*/
+.scroll {
+	position: absolute;z-index: 2;
+	left: 50%;bottom: 0px;transform: translateX(-50%);
+	width: 30px;	/*画像の幅*/
 }

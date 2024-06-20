@@ -20,38 +20,9 @@
 
     <header>
     <div class="inner">
-        <h1 id="logo"><a href="https://timebaibai.com"><img src="{% static 'images/siteid.png' %}" alt="占いサロンチャンス　オンライン予約サイト(ロゴ)"></a></h1>
-    </div>
-        <style>
-            .blogcard-site {
-                display: flex;
-                align-items: center;  /* faviconとテキストを中央揃えに */
-            }
-
-            .blogcard-favicon-image {
-                width: 24px;  /* faviconの大きさを調整 */
-                height: 24px;  /* 縦横比を保持 */
-                flex-shrink: 0;  /* 追加 */
-            }
-
-            .blogcard-text {
-                display: flex;
-                flex-direction: column;
-                margin-left: 10px;  /* faviconとの間隔を調整 */
-            }
-
-            .blogcard-title {
-                font-weight: bold;  /* タイトルを太字に */
-                text-overflow: ellipsis;  /* 文字列が長すぎる場合に省略記号(...)を表示 */
-            }
-            .submenu h4 {
-                text-decoration: underline;  /* 下線を引きます */
-                white-space: nowrap;  /* テキストを一行に収めます */
-                overflow: hidden;  /* テキストがボックスを超えた場合に隠します */
-                text-overflow: ellipsis;  /* テキストがボックスを超えた場合に省略記号（...）を表示します */
-                width: 200px;  /* 必要に応じて幅を調整します */
-            }
-            </style>
+        <h1 id="logo"><a href="index.html"><img src="{% static 'images/.png' %}" alt="占いサロンチャンス　オンライン予約サイト(ロゴ)"></a></h1>
+        <p class="login"><a href="login.html">LINEでログイン</a></p>
+        </div>
     </header>
 
 <!--PC用（901px以上端末）メニュー-->
@@ -83,81 +54,51 @@
     </ul>
     </nav>
 
+
+        <!-- カルーセルの外枠 -->
+        <div class="carousel">
+            <!--  1枚目の画像  -->
+            <img src="https://dummyimage.com/320x120/ff0000/ffffff&text=１">
+            <!--  2枚目の画像  -->
+            <img src="https://dummyimage.com/320x120/00ff00/ffffff&text=２">
+            <!--  3枚目の画像  -->
+            <img src="https://dummyimage.com/320x120/0000ff/ffffff&text=３">
+            <!--  4枚目の画像  -->
+            <img src="https://dummyimage.com/320x120/ff00ff/ffffff&text=４">  
+            <!--  1枚目と同じ画像  -->
+            <img src="https://dummyimage.com/320x120/ff0000/ffffff&text=１">
+          </div>
+          
 <div id="contents" class="inner">
 
 <div id="contents-in">
+
+
+<div id="main">
+
+
+
+</div>
+<!--/#main-->
+
+<div id="sub">
+
+   
     
-    <div id="main">
-        
-
-        {% block content %}{% endblock %}
-
-    </div>
-    <!--/#main-->
-
-    <div id="sub">
-
-        <section>
-            <h2>お知らせ</h2>
-            {% for notice in notices %}
-            <div class="submenu">
-                <a href="{{ notice.link }}">
-                    <h4>◆{{ notice.title }}</h4>
-                    <p>更新日：{{ notice.updated_at }}</p>
-                </a>
-            </div>
-            {% endfor %}
-        </section>
-
-        <div class="box1">
-            <h2 class="mb10">運営会社</h2>
-            <p>{{ company.name }}<br>
-            {{ company.address }}<br>
-            TEL:{{ company.tel }}<br>
-        </div>       
-       
-    </div>
-    <!--/#sub-->
+</div>
+<!--/#sub-->
 
 </div>
 <!--/#contents-in-->
 
-    <div id="side">
+<div id="side">
 
-    <section>
-        <h2>☆メディア掲載情報☆</h2>
-        {% for media in medias %}
-        <div class="list-sub">
-            <a href="{{ media.link }}" target="_blank">
-                <div class="blogcard-site external-blogcard-site">
-                    <div class="blogcard-favicon-image external-blogcard-favicon-image">
-                        <img src="https://www.google.com/s2/favicons?domain={{ media.link }}" alt="" class="blogcard-favicon-image external-blogcard-favicon-image"/>
-                    </div>
-                    <div class="blogcard-text">
-                        <div class="blogcard-title external-blogcard-title">{{ media.title }}</div>
-                        <div class="blogcard-snippet external-blogcard-snippet">{{ media.description }}</div>
-                    </div>
-                </div>
-            {% if forloop.first %}
-                <span class="new">new</span>
-            {% endif %}
-            </a>
-        </div>
-        {% endfor %}
-    </section>
+</div>
+<!--/#side-->
 
-    <p>
-        <a href="recruit.html"><img src="{% static 'images/banner1.jpg' %}" alt="採用情報" class="pc"></a>
-        <!-- <a href="recruit.html"><img src="images/banner1_sh.jpg" alt="採用情報" class="sh"></a> -->
-        </p>
+ </div>
+<!--/#contents-->
 
-    </div>
-    <!--/#side-->
-
-    </div>
-    <!--/#contents-->
-
-</section>
 
     <footer>
         <div id="footermenu" class="inner">
@@ -173,12 +114,10 @@
             <li class="title">スタッフ用ページ</li>
             {% if user.is_authenticated %}
             <li><a href="{% url 'booking:my_page' %}">マイページ</a></li>
-            <li>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">ログアウト</a>
-                <form id="logout-form" action="{% url 'booking:logout' %}" method="post" style="display: none;">
+            <li><form action="{% url 'booking:logout' %}" method="post" class="d-inline">
                     {% csrf_token %}
-                </form>
-            </li>
+                    <button type="submit" class="btn btn-link nav-link">ログアウト</button>
+                </form></li>
             {% else %}
             <li><a href="{% url 'booking:login' %}">ログイン</a></li>
             {% endif %}

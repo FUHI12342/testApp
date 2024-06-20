@@ -341,6 +341,7 @@ class OnlyUserMixin(UserPassesTestMixin):
 class StoreList(generic.ListView):
     model = Store
     ordering = 'name'
+    
 
 
 class StaffList(generic.ListView):
@@ -772,3 +773,8 @@ def coiney_webhook(request, orderId):
             return view.post(request,orderId)
         else:
             return JsonResponse({"error": "orderId not found in request body"}, status=400)
+from .models import Media
+
+def your_view(request):
+    medias = Media.objects.order_by('-created_at')  # created_atフィールドの降順で並べ替え
+    return render(request, 'booking/base.html', {'medias': medias})

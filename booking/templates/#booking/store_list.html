@@ -3,7 +3,7 @@
 
 {% block content %}
 <head>
-    <link rel="stylesheet" type="text/css" href="{% static 'testApp/box17.css' %}">
+    <!-- <link rel="stylesheet" type="text/css" href="{% static 'testApp/box17.css' %}"> -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 </head>
 
@@ -13,27 +13,31 @@
     {% for store in store_list %}
 
     <div class="list">
-        <p class="img"><a href="{% url 'booking:staff_list' store.pk %}"><img src="{{ store.get_thumbnail_url }}" alt="{{ store.name }}"></a></p>
-        <h4><a href="{% url 'booking:staff_list' store.pk %}">{{ store.name }}</a></h4>
+
+
+    <p class="img"><a href="{% url 'booking:staff_list' store.pk %}"><img src="{% static 'images/sample_fudosan1.jpg' %}" alt="タイトル"></a></p>
+   
+        <h4><a href="{% url 'booking:staff_list' store.pk %}">{{ store.name }}</a><span class="newicon">NEW</span></h4>
         
-        <p class="mb10">{{ store.description }}</p>
+        <p class="mb10">（店舗情報について記載してください）</p>
 
         <table class="c2">
             <tr>
             <th>店舗所在地</th>
-            <td>{{ store.address }}</td>
+            <td>東京都</td>
             </tr>
             <tr>
             <th>営業時間</th>
-            <td>{{ store.business_hours }}</td>
-            </tr>
-            <tr>
+            <td><br>
+            </td>
+        </tr>
+        <tr>
             <th>交通／最寄駅</th>
-            <td>{{ store.nearest_station }}</td>
+            <td>XXバス停徒歩3分<br>
+            JRXX駅徒歩10分</td>
             </tr>
             <tr>
             <th>定休日</th>
-            <td>{{ store.regular_holiday }}</td>
             </tr>
             </table>
 
