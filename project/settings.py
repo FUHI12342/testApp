@@ -42,7 +42,8 @@ STATICFILES_DIRS = [
 
 # 本番環境設定
 DEBUG = os.getenv('DEBUG') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+# settings.py
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') + ['meet-slave5.loolootest.com']
 STATIC_ROOT = os.getenv('STATIC_ROOT')
 MEDIA_ROOT = os.getenv('MEDIA_ROOT')
 
