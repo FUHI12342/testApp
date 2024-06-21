@@ -109,6 +109,7 @@ class Notice(models.Model):
     updated_at = models.DateTimeField(auto_now=True)  # 更新日
     title = models.CharField(max_length=200)  # タイトル
     link = models.URLField()  # リンク
+    content = models.TextField(default='')  # 内容
     class Meta:
         verbose_name = 'お知らせ'
         verbose_name_plural = 'お知らせ'
