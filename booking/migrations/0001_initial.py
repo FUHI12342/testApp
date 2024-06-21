@@ -40,10 +40,8 @@ class Migration(migrations.Migration):
             name='Media',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('link', models.URLField()),
-                ('title', models.CharField(blank=True, max_length=200)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('description', models.TextField(blank=True)),
+                ('title', models.CharField(max_length=255, verbose_name='タイトル')),
+                ('link', models.URLField(verbose_name='リンク')),
             ],
             options={
                 'verbose_name': 'メディア掲載情報',
@@ -54,9 +52,9 @@ class Migration(migrations.Migration):
             name='Notice',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=200)),
-                ('link', models.URLField()),
+                ('title', models.CharField(max_length=255, verbose_name='タイトル')),
+                ('content', models.TextField(verbose_name='内容')),
+                ('link', models.URLField(default='', verbose_name='リンク')),
             ],
             options={
                 'verbose_name': 'お知らせ',
@@ -73,7 +71,6 @@ class Migration(migrations.Migration):
                 ('business_hours', models.CharField(default='', max_length=255, verbose_name='営業時間')),
                 ('nearest_station', models.CharField(default='', max_length=255, verbose_name='最寄り駅')),
                 ('regular_holiday', models.CharField(default='', max_length=255, verbose_name='定休日')),
-                ('description', models.TextField(blank=True, default='', verbose_name='店舗情報')),
             ],
             options={
                 'verbose_name': '店舗一覧',
