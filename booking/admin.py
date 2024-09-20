@@ -8,6 +8,22 @@ from django.utils.safestring import mark_safe
 """ Django 管理サイト名変更 """
 admin.site.site_header = '占いサロンチャンス管理ページ'
 admin.site.site_title = '占いサロンチャンス管理ページ'
+from django.db.models import Count
+
+from django.contrib import admin
+from .models import Schedule
+
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('hashed_id_short', 'customer_name', 'start', 'end', 'staff', 'is_temporary', 'price', 'memo')
+    
+    search_fields = ('customer_name', 'hashed_id')  # 顧客名とハッシュIDで検索可能にする
+    ordering = ('-start',)  # 新しい予約から表示
+
+    def hashed_id_short(self, obj):
+        return str(obj.hashed_id)[:10]  # hashed_idを10桁に制限
+    hashed_id_short.short_description = 'Hashed ID'  # 管理画面での列名
+
+admin.site.register(Schedule, ScheduleAdmin)
 
 class StaffAdmin(admin.ModelAdmin):
     list_display = ('name', 'display_thumbnail')  # 'name'と'display_thumbnail'を表示する
@@ -39,7 +55,6 @@ class SuperUserOnlyAdmin(admin.ModelAdmin):
 # 自分のモデルだけを登録
 admin.site.register(Staff, StaffAdmin)
 admin.site.register(Store)
-admin.site.register(Schedule)
 
 # Python Social Authのモデルを登録から除外
 admin.site.unregister(Association)

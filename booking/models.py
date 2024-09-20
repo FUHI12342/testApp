@@ -53,22 +53,17 @@ class Staff(models.Model):
     def __str__(self):
         return f'{self.store.name} - {self.name}'
     
-class Customer(models.Model):
-    line_user_id = models.CharField('LINEユーザーID', max_length=255)
-    name = models.CharField('名前', max_length=255, null=True, blank=True)
-    # 必要に応じて他のフィールドを追加
+# class Customer(models.Model):
+#     full_name = models.CharField(max_length=255)
+#     hashed_line_user_id = models.CharField(max_length=64, unique=True, null=True)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.full_name
+
+#     def print_hashed_line_user_id(self):
+#         print('hashed_line_user_id: ' + str(self.hashed_line_user_id))
     
 from django.core.exceptions import ValidationError
-
-def create_customer(line_user_id, name):  # その他のパラメーター
-    if Customer.objects.filter(line_user_id=line_user_id).exists():
-        raise ValidationError(f"Customer with line_user_id {line_user_id} already exists.")
-    # その他のパラメーターとともにCustomerオブジェクトを作成
-    customer = Customer(line_user_id=line_user_id, name=name)
-    customer.save()
 
 from django.conf import settings
 import uuid
@@ -79,10 +74,13 @@ class Schedule(models.Model):
     start = models.DateTimeField('開始時間')
     end = models.DateTimeField('終了時間')
     staff = models.ForeignKey('Staff', verbose_name='占いスタッフ', on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer, verbose_name='顧客', on_delete=models.CASCADE, null=True, blank=True)
+    customer_name = models.CharField(max_length=255, null=True, blank=True)
+    hashed_id = models.CharField(max_length=255, null=True, blank=True)
     is_temporary = models.BooleanField('仮予約フラグ', default=True)
     price = models.IntegerField('価格', default=0)  # 価格情報、デフォルト値を0に設定
+    memo = models.TextField('備考', blank=True, null=True, default='ここに備考を記入してください。')
     temporary_booked_at = models.DateTimeField(null=True, blank=True)
+    
     class Meta:
         verbose_name = '予約確定済みのスケジュール'
         verbose_name_plural = '予約確定済みのスケジュール'
@@ -90,8 +88,9 @@ class Schedule(models.Model):
     def __str__(self):
         start = timezone.localtime(self.start).strftime('%Y/%m/%d %H:%M:%S')
         end = timezone.localtime(self.end).strftime('%Y/%m/%d %H:%M:%S')
-        return f'{self.reservation_number} {start} ~ {end} {self.staff}'
-    
+        customer_name = self.customer_name if self.customer_name else "No customer"  # 修正
+        return f'{self.reservation_number} {start} ~ {end} {self.staff} Customer: {customer_name}'
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

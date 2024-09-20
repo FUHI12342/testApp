@@ -21,12 +21,12 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 from django.views.decorators.http import require_POST
-from booking.models import Store, Staff, Schedule, Customer, Timer,UserSerializer
+from booking.models import Store, Staff, Schedule, Timer,UserSerializer
 import sys
 from rest_framework import generics
 from django.contrib.auth.models import User
 
-print('環境変数1' + str(sys.path))
+#print('環境変数1' + str(sys.path))
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
@@ -36,34 +36,6 @@ User = get_user_model()
 class Index(generic.TemplateView):
     template_name = 'booking/index.html'
 
-
-class LineEnterView(View):
-    def get(self, request):
-        # ランダムなstateを生成し、セッションに保存します。
-        state = secrets.token_hex(10)
-        request.session['state'] = state
-        
-        #print('セッション' + str(request.session.items())) 
-        
-        context = {
-            'channel_id': LINE_CHANNEL_ID,
-            'redirect_url': REDIRECT_URL,
-            'random_state': state,
-        }
-        return render(request, 'booking/line_login.html', context)
-
-    def post(self, request):
-        # POSTリクエストを処理します。
-        # ここでは、例として同じcontextを使用しますが、
-        # 実際にはPOSTリクエストのデータに基づいてcontextを更新することが一般的です。
-        state = secrets.token_hex(10)
-        request.session['state'] = state
-        context = {
-            'channel_id': LINE_CHANNEL_ID,
-            'redirect_url': REDIRECT_URL,
-            'random_state': state,
-        }
-        return render(request, 'booking/line_login.html', context)
     
 from django.http import JsonResponse
 from django.utils import timezone
@@ -112,10 +84,6 @@ def get_reservation_times(request, pk):
     # 開始時間と終了時間をISO 8601形式の文字列として返す
     return JsonResponse({'startTime': schedule.start.isoformat(), 'endTime': schedule.end.isoformat()})
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Schedule
-
 def get_reservation(request, pk):
     # pkを使用して予約を取得
     schedule = get_object_or_404(Schedule, pk=pk)
@@ -124,91 +92,124 @@ def get_reservation(request, pk):
         'startTime': schedule.start.isoformat(),
         'endTime': schedule.end.isoformat()
     })
-    
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
+     
 class CurrentTimeView(APIView):
     def get(self, request):
         import datetime
         current_time = datetime.datetime.now()
         return Response({"current_time": str(current_time)})
     
-from django.shortcuts import redirect
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.views import View
+import hashlib
+import urllib.parse
+import requests
+import json
+import jwt
+from linebot import LineBotApi
+from linebot.exceptions import LineBotApiError
 
-LINE_CHANNEL_ID = settings.LINE_CHANNEL_ID  # 自身のLINEチャンネルIDを入力
-LINE_CHANNEL_SECRET = settings.LINE_CHANNEL_SECRET
-REDIRECT_URL = settings.LINE_REDIRECT_URL
+LINE_CHANNEL_ID =  '2006040383'
+LINE_CHANNEL_SECRET = '44d0ddf511abac410bf2be6b302e2f48'
+REDIRECT_URL = 'http://127.0.0.1:8000/booking/login/line/success/'
+
+class LineEnterView(View):
+    def get(self, request):
+        # 認証URLを生成する
+        state = secrets.token_hex(10)  # ランダムな文字列を生成
+        request.session['state'] = state  # stateをセッションに保存
+
+        params = {
+            'response_type': 'code',
+            'client_id': LINE_CHANNEL_ID,
+            'redirect_uri': REDIRECT_URL,
+            'state': state,
+            'scope': 'openid profile email',
+        }
+        auth_url = 'https://access.line.me/oauth2/v2.1/authorize?' + urllib.parse.urlencode(params)
+
+        # ユーザーをLINEログインページにリダイレクト
+        return HttpResponseRedirect(auth_url)
+    
 
 class LineCallbackView(View):
-        def get(self, request):
-            context = {}
-            code = request.GET.get('code')
-            state = request.GET.get('state')
+    def get(self, request):
+                # 以下、既存のコード...
+                context = {}
+                code = request.GET.get('code')
+                state = request.GET.get('state')
 
-            # stateがセッションに保存されたものと一致することを確認します。
-            if state != request.session.get('state'):
-                return HttpResponseBadRequest()
-            
-            # 認可コードを取得する
-            uri_access_token = "https://api.line.me/oauth2/v2.1/token"
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+                # stateがセッションに保存されたものと一致することを確認します。
+                if state != request.session.get('state'):
+                    return HttpResponseBadRequest()
+                
+                # 認可コードを取得する
+                uri_access_token = "https://api.line.me/oauth2/v2.1/token"
+                headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-            if code is not None:
-                data_params = {
-                    "grant_type": "authorization_code",
-                    "code": code,
-                    "redirect_uri": REDIRECT_URL,
-                    "client_id": LINE_CHANNEL_ID,
-                    "client_secret": LINE_CHANNEL_SECRET
-                }
-                # トークンを取得するためにリクエストを送る
-                response_post = requests.post(uri_access_token, headers=headers, data=data_params)
+                if code is not None:
+                    data_params = {
+                        "grant_type": "authorization_code",
+                        "code": code,
+                        "redirect_uri": REDIRECT_URL,
+                        "client_id": LINE_CHANNEL_ID,
+                        "client_secret": LINE_CHANNEL_SECRET
+                    }
+                    # トークンを取得するためにリクエストを送る
+                    response_post = requests.post(uri_access_token, headers=headers, data=data_params)
 
-                if response_post.status_code == 200:
-                    # 今回は"id_token"のみを使用する
-                    line_id_token = json.loads(response_post.text)["id_token"]
-                    # ペイロード部分をデコードすることで、ユーザ情報を取得する
+                    if response_post.status_code == 200:
+                        # 今回は"id_token"のみを使用する
+                        line_id_token = json.loads(response_post.text)["id_token"]
+                        # ペイロード部分をデコードすることで、ユーザ情報を取得する
+                        
                     user_profile = jwt.decode(line_id_token,
-                                    LINE_CHANNEL_SECRET,
-                                    audience=LINE_CHANNEL_ID,
-                                    issuer='https://access.line.me',
-                                    algorithms=['HS256'],
-                                    options={'verify_iat': False})
+                                                LINE_CHANNEL_SECRET,
+                                                audience=LINE_CHANNEL_ID,
+                                                issuer='https://access.line.me',
+                                                algorithms=['HS256'],
+                                                options={'verify_iat': False})
+
+                    # ユーザープロフィールから顧客名を取得
+                    customer_name = user_profile['name'] if user_profile else 'Unknown User'
+
+                    # ユーザーIDをハッシュ化
+                    hashed_id = hashlib.sha256(user_profile['sub'].encode()).hexdigest()
+
+
                     # LINE登録のユーザー情報を表示する場合は、contextに追加しておく
                     context["user_profile"]=user_profile
+                    #print('★★★ユーザー情報★★★: ' + str(user_profile))
 
-                    # LINEユーザーIDを取得
-                    line_user_id = user_profile['sub']
-                    print('LINEユーザーID: ' + line_user_id)
-
-                    try:
-                        customer = Customer.objects.get(line_user_id=line_user_id)
-                    except Customer.DoesNotExist:
-                        print("Customerが存在しません。")
-                        customer = None
-
-                    if customer is not None:
-                        # LINEユーザーIDを設定
-                        customer.line_user_id = line_user_id
-
-                        # インスタンスを保存
-                        customer.save()
-
-                    from linebot import LineBotApi
-                    from linebot.models import TextSendMessage
-                    from linebot.exceptions import LineBotApiError
-                
                     # LINE Messaging APIの初期化
                     line_bot_api = LineBotApi(settings.LINE_ACCESS_TOKEN)
 
                     #ユーザーIDとメッセージ
                     #ユーザーIDはログイン後に取得
                     user_id = user_profile['sub']
-                    request.session['user_id'] = user_id  # セッションにuser_idを保存
+                    print('◆□ユーザーID: ' + user_id)
 
                     try:
+                        # ユーザープロファイルの取得
+                        profile = line_bot_api.get_profile(user_id)
+                        # ユーザーIDとメッセージ
+                        user_id = profile.user_id
+                    except LineBotApiError as e:
+                        if e.status_code == 404:
+                            print('ユーザーがボットを友達登録していません400')
+                            # ユーザーがボットを友達登録していない場合
+                            # ユーザーにボットを友達登録するように促すメッセージを送信
+                            message = TextSendMessage(text="Please add our bot as a friend to continue.")
+                            line_bot_api.push_message(user_id, message)
+                            return HttpResponseBadRequest()
+                        else:
+                            print('ユーザーがボットを友達登録していません500')
+                            # その他のエラー
+                            print(f"Failed to get profile: {e}")
+                            return HttpResponseBadRequest()
+                    print('-------分岐・前--------') 
+                    try:
+                        print('-------分岐・後--------')
                         # ユーザープロファイルの取得
                         profile = line_bot_api.get_profile(user_id)
                         # ユーザーIDとメッセージ
@@ -226,25 +227,40 @@ class LineCallbackView(View):
 
                         # 仮予約情報をセッションから取得
                         temporary_booking = request.session.get('temporary_booking')
-
+                        print('★★★仮予約情報★★★: ' + str(temporary_booking))
                         if temporary_booking is not None:
-                            # 価格情報を取得
-                            price = temporary_booking['price']
-                            schedule_reservation_number = temporary_booking['reservation_number']
-                            
+                            # 新しいScheduleインスタンスを作成して保存
+                            schedule = Schedule(
+                                reservation_number=temporary_booking['reservation_number'],
+                                start=timezone.make_aware(datetime.fromisoformat(temporary_booking['start'])),  # タイムゾーン情報を追加
+                                end=timezone.make_aware(datetime.fromisoformat(temporary_booking['end'])),  # タイムゾーン情報を追加
+                                price=temporary_booking['price'],
+                                customer_name=customer_name,  # 顧客名を設定
+                                hashed_id=hashed_id,  # ハッシュIDを設定
+                                staff_id=self.request.session['temporary_booking']['staff_id']  # スタッフIDをセッションから取得
+                            )
+
+                            schedule.save()
+                            print('★★★スケジュール★★★: ' + str(schedule))
+                            print('★★顧客名★★: ' + str(customer_name))
+                            print('★★ハッシュID★★: ' + str(hashed_id))
+
+                            # 仮予約情報をセッションから削除
+                            del request.session['temporary_booking']
                         else:
                             print("仮予約情報がセッションに存在しません。")
                             price = None  # または適切なデフォルト値を設定
-
+                            
                         # 決済サービスのAPIを使用して決済URLを生成
                         payment_api_url = 'https://api.coiney.io/api/v1/payments'
                         headers = {
                             'Authorization': 'Bearer ' + settings.PAYMENT_API_KEY,
                             'Content-Type': 'application/json'  
                         }
-
+                        reservation_number = schedule.reservation_number
+                        price = schedule.price
                         # Webhook URLを動的に設定
-                        webhook_url = settings.WEBHOOK_URL_BASE + str(schedule_reservation_number)+ '/'
+                        webhook_url = f"{settings.WEBHOOK_URL_BASE}{reservation_number}/"
 
                         data = {
                             "amount": price,  # 仮予約情報から取得した価格情報を設定
@@ -257,7 +273,7 @@ class LineCallbackView(View):
                             "description": "ウェブサイトからの支払い",
                             "remarks": "仮予約から15分を過ぎますと自動的にキャンセルとなります。あらかじめご了承ください。",
                             "metadata": {
-                                "orderId":schedule_reservation_number
+                                "orderId":reservation_number
                             },
                             "expiredOn": expired_on_str
                         }
@@ -282,8 +298,7 @@ class LineCallbackView(View):
                             print('LINEアカウントID'+ user_id)
                             print("Message sent successfully")
                         else:
-                            print("Payment URL is not available") 
-                        
+                            print("Payment URL is not available")  
                     except LineBotApiError as e:
                         print("Failed to send message: ", e)
                         if e.status_code == 404:
@@ -312,7 +327,7 @@ class PayingSuccessView(View):
     def post(self, request, orderId):
         # 決済サービスからのレスポンスを解析
         payment_response = json.loads(request.body)
-        print('PayingSuccessView起動、決済サービスからのレスポンス解析中')
+        #print('PayingSuccessView起動、決済サービスからのレスポンス解析中')
         return process_payment(payment_response, request, orderId)
     
 class LineSuccessView(View):
@@ -470,6 +485,7 @@ class PreBooking(generic.CreateView):
         if Schedule.objects.filter(staff=staff, start=start).exists():
             print("既に同じスタッフと開始時間でスケジュールが存在します。")
             messages.error(self.request, 'すみません、入れ違いで予約がありました。別の日時はどうですか。')
+            return HttpResponseRedirect(reverse('booking:staff_calendar', args=[staff.id]))  # スタッフのカレンダーページにリダイレクト
         else:
             schedule = form.save(commit=False)
             schedule.staff = staff
@@ -478,31 +494,15 @@ class PreBooking(generic.CreateView):
             schedule.is_temporary = True  # 仮予約フラグを設定
             schedule.price = price  # 価格を設定
             schedule.temporary_booked_at = datetime.datetime.now(tz)  # 仮予約日時を設定
-
-            customer = Customer()  # 新しいCustomerインスタンスを作成
-            # 必要な情報を設定（ここでは例としてnameフィールドを設定）
-            customer.name = '取得した名前'
-            customer.save()  # インスタンスを保存
             
-          
-            if customer.pk is not None:
-                print("Customerインスタンスの作成と保存が成功しました。")
-                schedule.customer = customer  # 作成したCustomerインスタンスをScheduleに紐づける
-            else:
-                print("Customerインスタンスの作成と保存に失敗しました。")
-
-            schedule.save()
-            print('仮予約完了')
-            print(customer.name, customer.line_user_id, schedule.start, schedule.end, schedule.price)
-            
-            user_id = self.request.session.get('user_id')  # セッションからuser_idを取得
             # 仮予約情報をセッションに保存
             self.request.session['temporary_booking'] = {
                 'reservation_number': str(schedule.reservation_number),
-                'user_id': user_id,  # セッションから取得したuser_idを使用
                 'start': start.isoformat(),
                 'end': end.isoformat(),
                 'price': price,
+                'is_temporary': schedule.is_temporary,  # 仮予約フラグを保存
+                'staff_id': staff.id,  # スタッフIDを保存
             }
 
 
@@ -735,16 +735,28 @@ def process_payment(payment_response, request, orderId):
         except LineBotApiError as e:
             print('スタッフメッセージにてLineBotApiErrorが発生しました:', e)            
                         
-        # 確認済みのセッションから顧客のLINE IDを取得します。
+           # 確認済みのセッションから顧客のLINE IDを取得します。
         try:
             user_id = request.session.get('temporary_booking').get('user_id')
-            print('顧客のLINEアカウントIDはこれです' + str(user_id))
             if user_id is None:
                 logger.error('user_id is None')
                 return JsonResponse({"error": "user_id not found"}, status=400)
         except Exception as e:
             logger.error('Error getting user_id from session: %s', e)
             return JsonResponse({"error": "Error getting user_id"}, status=500)
+
+        # LINEプロフィールから名前を取得
+        try:
+            profile = line_bot_api.get_profile(user_id)
+            name = profile.display_name
+        except LineBotApiError as e:
+            print('LINEプロフィール取得時にエラーが発生しました:', e)
+            return JsonResponse({"error": "Error getting LINE profile"}, status=500)
+
+        # 予約情報を更新
+        schedule.customer.name = name
+        schedule.save()
+
             
         # タイマーURLを生成
         timer_url = reverse('booking:LINETimerView', args=[user_id])

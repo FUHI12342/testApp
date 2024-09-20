@@ -11,9 +11,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,30 +20,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 
-# 静的ファイルの設定
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
+# ローカル
+DEBUG = True
 
-# #ローカル環境
-# DEBUG = True
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# # 本番
+# DEBUG = False
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
-]
-
-# 本番環境設定
-DEBUG = os.getenv('DEBUG') == 'True'
-# settings.py
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') + ['meet-slave5.loolootest.com']
-STATIC_ROOT = os.getenv('STATIC_ROOT')
-MEDIA_ROOT = os.getenv('MEDIA_ROOT')
-
+# ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -59,8 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', 
-    #'testApp',
+    'django.contrib.staticfiles',
+    #'testApp', 
     'rest_framework'
 ]
 
@@ -72,7 +56,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -94,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'booking.context_processors.global_context', 
             ],
         },
     },
@@ -105,15 +90,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# Database
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE'),
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -170,6 +150,23 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
+from dotenv import load_dotenv
+import os
+
+# 静的ファイルの設定
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
+]
+
+
+#本番環境での静的ファイルの設定
+#STATIC_ROOT = '/usr/share/nginx/html/static'
+
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/usr/share/nginx/html/media'
+
 
 import datetime
 
@@ -215,6 +212,7 @@ PUBLIC_HOLIDAYS = [
 LOGIN_URL = 'booking:login'
 LOGIN_REDIRECT_URL = 'booking:store_list' # ログイン後にリダイレクトするURL
 LOGOUT_REDIRECT_URL = 'booking:login' 
+
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 LINE_CHANNEL_ID = os.getenv('LINE_CHANNEL_ID')

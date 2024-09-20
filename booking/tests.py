@@ -8,7 +8,32 @@ from .models import Schedule, Staff, Store, Customer
 batu = '×'
 maru = '○'
 line = '-'
+from django.http import HttpRequest
+from unittest.mock import patch, Mock
+from django.test import TestCase
+from .views import process_payment
 
+@patch('requests.post')  # requests.postをモック化
+def test_process_payment(self, mock_post):
+     # モックのレスポンスを設定
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {"status": "success"}
+    
+    # 決済成功を示すpayment_responseを作成
+    payment_response = {'type': 'payment.succeeded'}
+
+    # 空のHttpRequestオブジェクトを作成
+    request = HttpRequest()
+
+    # 適当なorderIdを設定
+    orderId = 'test_order_id'
+
+    # process_payment関数を呼び出す
+    response = process_payment(payment_response, request, orderId)
+
+    # responseが期待通りであることを確認
+    self.assertEqual(response.status_code, 200)
+    self.assertEqual(response.json(), {"status": "success"})
 
 class StoreListViewTests(TestCase):
     fixtures = ['initial']

@@ -5,12 +5,13 @@
 
 <h2>{{ store.name }}店 在籍占い師</h2>
 
+
 {% for staff in staff_list %}
 <div class="list">  
     
     <p class="img"><a href="{% url 'booking:staff_list' store.pk %}"><img src="{{ staff.thumbnail.url }}"  alt="タイトル"　id="img1"></a></p>
 
-    <h4><a href="{% url 'booking:calendar' staff.pk %}">{{ staff.name }} 先生</a></h4>
+    <h4><a href="{% url 'booking:staff_calendar' staff.pk %}">{{ staff.name }} 先生</a></h4>
         <a>鑑定料：{{ staff.price }} 円（１時間）</a>
     <br>
         <p class="mb10">
@@ -18,6 +19,6 @@
         </p>
    
 </div>
-    {% endfor %}
+{% endfor %}
 
 {% endblock %}

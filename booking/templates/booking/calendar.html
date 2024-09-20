@@ -6,7 +6,14 @@
     <h2>予約カレンダー</h2>
     <h3>店舗：新大久保店</h3>
     <p>予約したい日時をカレンダーから選択してください</p>
-       
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}" style="color: red; font-weight: bold; font-size: 2em;"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
     <p style="font-size: 20px;">
         <strong class="color1">◆{{ start_day }} - {{ end_day }}</strong>(現在選択中の占い師：<strong class="color1">{{ staff.name }}</strong>)</p>
 
