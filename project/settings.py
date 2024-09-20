@@ -215,9 +215,9 @@ LOGOUT_REDIRECT_URL = 'booking:login'
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
-LINE_CHANNEL_ID = "2003969601"
+LINE_CHANNEL_ID = "2006040383"
 
-LINE_CHANNEL_SECRET = "0f65e88a404ba95833bca990cf312e40"
+LINE_CHANNEL_SECRET = "44d0ddf511abac410bf2be6b302e2f48"
 
 LINE_REDIRECT_URL = 'http://127.0.0.1:8000/booking/login/line/success/' # リダイレクトURL
 
