@@ -11,9 +11,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,30 +20,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = '&670@la%)g1zo2y7(+4+^pl00sb(cjl4rpvkf@2ly)eo+a$1k!'
 
-# 静的ファイルの設定
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
+# ローカル
+DEBUG = True
 
-# #ローカル環境
-# DEBUG = True
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# # 本番
+# DEBUG = False
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
-]
-
-# 本番環境設定
-DEBUG = os.getenv('DEBUG') == 'True'
-# settings.py
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') + ['meet-slave5.loolootest.com']
-STATIC_ROOT = os.getenv('STATIC_ROOT')
-MEDIA_ROOT = os.getenv('MEDIA_ROOT')
-
+# ALLOWED_HOSTS = ['timebaibai.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -59,8 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', 
-    #'testApp',
+    'django.contrib.staticfiles',
+    #'testApp', 
     'rest_framework'
 ]
 
@@ -72,7 +56,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -94,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'booking.context_processors.global_context', 
             ],
         },
     },
@@ -105,15 +90,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# Database
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE'),
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -170,6 +150,23 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
+from dotenv import load_dotenv
+import os
+
+# 静的ファイルの設定
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
+]
+
+
+#本番環境での静的ファイルの設定
+#STATIC_ROOT = '/usr/share/nginx/html/static'
+
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/usr/share/nginx/html/media'
+
 
 import datetime
 
@@ -215,15 +212,45 @@ PUBLIC_HOLIDAYS = [
 LOGIN_URL = 'booking:login'
 LOGIN_REDIRECT_URL = 'booking:store_list' # ログイン後にリダイレクトするURL
 LOGOUT_REDIRECT_URL = 'booking:login' 
+
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
-LINE_CHANNEL_ID = os.getenv('LINE_CHANNEL_ID')
-LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
-LINE_REDIRECT_URL = os.getenv('LINE_REDIRECT_URL')
-PAYMENT_API_KEY = os.getenv('PAYMENT_API_KEY')
-LINE_ACCESS_TOKEN = os.getenv('LINE_ACCESS_TOKEN')
-user_id = os.getenv('user_id')
-CELERY_broker_url = os.getenv('CELERY_broker_url')
-PAYMENT_API_URL = os.getenv('PAYMENT_API_URL')
+LINE_CHANNEL_ID = "2006040383"
 
-CANCEL_URL = os.getenv('CANCEL_URL')
+LINE_CHANNEL_SECRET = "44d0ddf511abac410bf2be6b302e2f48"
+
+LINE_REDIRECT_URL = 'http://127.0.0.1:8000/booking/login/line/success/' # リダイレクトURL
+
+import requests
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
+
+# LINE Messaging APIのアクセストークン
+line_access_token = 'SwYJEbvMawMifRQ2yXIvhLLZJHwsBAOQzo4uGOrwIACTOybf3YbvJsWxVWN7KOtEcQJnpjQ6A4nYsc9+8is7ZYU2aIyrc2w1XESYFUOlWb17nScbom6jUxW/8UeejLpoFBPwErqH6JKes7SMSYd/PgdB04t89/1O/w1cDnyilFU='
+
+# # 決済サービスのAPIキー
+PAYMENT_API_KEY = 'sk_live_7ldzwc0xXXyVcarFazjHEEN7bTvXpa7x'
+
+# ユーザーID（LINEログイン後に取得）
+user_id = 'USER_ID'
+
+# LINE Messaging APIの初期化
+line_bot_api = LineBotApi(line_access_token)
+
+# 決済サービスのAPIを使用して決済URLを生成
+PAYMENT_API_URL = 'https://api.payment-service.com/create-payment-url'
+
+# LINE Messaging APIのアクセストークン
+LINE_ACCESS_TOKEN = 'GVMEVG7Q83BMUzcXpShX2s0mfBC9SZ/UnZHVqKgWngRbvdQ2WPNsMOEHLoBcOr/bq36X48a93ErCJq95Wqs/KU5q2djJohPSer8OqkVr4ybtPyl48fTN3u204rMZT/KrBrnuR0oL+u88w4InAjGrfwdB04t89/1O/w1cDnyilFU='
+
+# ユーザーIDとメッセージ
+#ユーザーIDはログイン後に取得
+user_id = 'Udf02e8cec56a91be9005b6f10c6b7a56'
+print('セッティング７７７')
+
+
+CELERY_broker_url = 'redis://localhost:6379/0'
+accept_content = ['json']
+task_serializer = 'json'
+WEBHOOK_URL_BASE = 'https://coiney.com/webhook'
+CANCEL_URL = 'https://coiney.com/cancel'
