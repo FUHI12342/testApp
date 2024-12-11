@@ -153,19 +153,19 @@ USE_TZ = True
 from dotenv import load_dotenv
 import os
 
-# # 静的ファイルの設定
-# STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
-# ]
+# 静的ファイルの設定
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # プロジェクトディレクトリ内の'staticfiles'ディレクトリを指定
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 'testApp/static'ディレクトリを静的ファイルのソースとして追加
+]
 
 
-#本番環境での静的ファイルの設定
-STATIC_ROOT = '/usr/share/nginx/html/static'
+# #本番環境での静的ファイルの設定
+# STATIC_ROOT = '/usr/share/nginx/html/static'
 
-# MEDIA_URL = '/media/'
-MEDIA_ROOT = '/usr/share/nginx/html/media'
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/usr/share/nginx/html/media'
 
 
 import datetime
