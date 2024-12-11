@@ -104,10 +104,11 @@ import json
 import jwt
 from linebot import LineBotApi
 from linebot.exceptions import LineBotApiError
+from linebot.models import TextSendMessage
 
-LINE_CHANNEL_ID =  '2006040383'
-LINE_CHANNEL_SECRET = '44d0ddf511abac410bf2be6b302e2f48'
-REDIRECT_URL = 'http://127.0.0.1:8000/booking/login/line/success/'
+LINE_CHANNEL_ID =  settings.LINE_CHANNEL_ID
+LINE_CHANNEL_SECRET = settings.LINE_CHANNEL_SECRET
+REDIRECT_URL = settings.LINE_REDIRECT_URL
 
 class LineEnterView(View):
     def get(self, request):
