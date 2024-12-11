@@ -187,23 +187,20 @@ class LineCallbackView(View):
                     print('◆□ユーザーID: ' + user_id)
 
                     try:
-                        # ユーザープロファイルの取得
                         profile = line_bot_api.get_profile(user_id)
-                        # ユーザーIDとメッセージ
                         user_id = profile.user_id
                     except LineBotApiError as e:
                         if e.status_code == 404:
                             print('ユーザーがボットを友達登録していません400')
-                            # ユーザーがボットを友達登録していない場合
-                            # ユーザーにボットを友達登録するように促すメッセージを送信
-                            message = TextSendMessage(text="Please add our bot as a friend to continue.")
+                            friend_register_url = "https://line.me/R/ti/p/2003969601"
+                            message = TextSendMessage(text=f"ボットを友達登録してください: {friend_register_url}")
                             line_bot_api.push_message(user_id, message)
                             return HttpResponseBadRequest()
                         else:
                             print('ユーザーがボットを友達登録していません500')
-                            # その他のエラー
                             print(f"Failed to get profile: {e}")
                             return HttpResponseBadRequest()
+
                     print('-------分岐・前--------') 
                     try:
                         print('-------分岐・後--------')
